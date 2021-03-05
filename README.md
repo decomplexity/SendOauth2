@@ -1,5 +1,6 @@
 # SendOauth2
 A wrapper for PHPMailer SMTP
+
 SendOauth2 supports both OAuth2 and Basic authentication for both Microsoft and Google.
 Microsoft support is primarily for Microsoft 365 accounts using Graph V1 with the V2 authentication and authorization endpoints.
 Google support is for any Gmail.
