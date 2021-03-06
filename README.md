@@ -5,7 +5,7 @@ SendOauth2 supports both OAuth2 and Basic authentication for both Microsoft and 
 Microsoft support is primarily for Microsoft 365 accounts using Graph V1 with the V2 authentication and authorization endpoints.
 Google support is for any Gmail.
   
-*Why wrap?* Non-trivial websites typically use email at many points (Contact pages, purchase confirmations, PayPal IPNs and so on), and incorporating PHPMailer invocation code and mail settings in each such page is a pain, especially if OAuth2 is set up to use a different Client ID and Client Secret for each point  - which is the recommended secure approach. 
+*Why wrap?* Non-trivial websites typically use email at many points (Contact pages, purchase confirmations, PayPal IPNs and so on), and incorporating PHPMailer invocation code and mail settings in each such page is a pain, especially if OAuth2 is set up to use a different Client Secret (and possibly even a different Client ID) for each point  - which is the recommended secure approach. 
 
 **1. CLASSES**
 SendOauth2 consists of four PHP classes held in PHP files of those names:
