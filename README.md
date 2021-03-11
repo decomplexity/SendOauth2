@@ -27,10 +27,15 @@ FLOW SUMMARY
 
 
 Microsoft and Google OAauth2 settings => paste => SendOauth2D
+
 Invoke SendOauth2D  <=> SendOauth2C (provider factory)
+
 SendOauth2D => writes interchange file containing inter alia a refresh token
+
 Invoke SendOauth2A => SendOauth2B to read interchange file
+
 SendOauth2B authenticates, then => SendOauth2A for PHPMailer sending
+
 
 **2. SERVICE SETTINGS:**
 For Microsoft AAD client setup , it appears unnecessary to add 'offline_access' and 'SMTP.Send' Graph permissions as long as SendOauth2D 
