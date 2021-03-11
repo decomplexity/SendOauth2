@@ -23,7 +23,14 @@ When SendOauth2A is instantiated from a web page for example, the relevant group
 
 ClientId, clientSecret, redirectURI and refreshToken thus only need to be copied from Microsoft  AAD or Google console.cloud into SendOauth2D. There is no need to replicate this into the code that invokes PHPMailer because is available 'on file'. This also means that if necessary, SendOauth2D can be moved afterwards to somewhere more secure, and there are dummy encrypt and decrypt point indicators in SendOauth2D and SendOauth2B respectively if developers wish to add further security to the interchange files.
 
+FLOW SUMMARY
 
+
+Microsoft and Google OAauth2 settings => paste => SendOauth2D
+Invoke SendOauth2D  <=> SendOauth2C (provider factory)
+SendOauth2D => writes interchange file containing inter alia a refresh token
+Invoke SendOauth2A => SendOauth2B to read interchange file
+SendOauth2B authenticates, then => SendOauth2A for PHPMailer sending
 
 **2. SERVICE SETTINGS:**
 For Microsoft AAD client setup , it appears unnecessary to add 'offline_access' and 'SMTP.Send' Graph permissions as long as SendOauth2D 
@@ -41,17 +48,13 @@ The Microsoft  provider is thenetworg * *oauth2-azure* * written primarily by Ja
  
 
 **4. INSTALLATION**
-Use Composer to get the latest versions of PHPMailer, thenetworg's Microsoft provider and PHP League oauth2-google provider
+Use Composer to get the latest stable versions of SendOauth2, PHPMailer, thenetworg's Microsoft provider and PHP League oauth2-google provider
 
 NB: one code change is currently needed to the Microsoft provider thenetworg oauth2-azure Azure.php
 This cannot be done as an override:
 - for release 2.0.1, at line 214, replace * *graph.windows.net* * by * *graph.microsoft.com* *  
 
-Composer will install PHPMailer and the providers in your php’s /vendor  folder.
-
-The four SendOauth2 class files and the SendOauth2S-invoke file of global instantiation code should be placed in the parent folder to /vendor.
-They are available here on Git for direct installation , and will shortly also be installable from Packagist via Composer 
-   
+Composer will install SendOauth2, PHPMailer and the providers in your php’s /vendor  folder.
 
 
 **5. SendOauth2D SETTINGS:**
@@ -75,7 +78,7 @@ So instantiation looks something like:
 new SendOauth2A ($mailStatus,$options)
 
 It is preceded by:
-require_once('SendOauth2A.php'):
+require_once 'decomplexity/sendoauth2/src/SendOauth2A.php';
 
 and followed by your test for success or failure ($mailStatus returns "OK" for a successful send):
 
@@ -144,7 +147,7 @@ new SendOauth2A ($mailStatus,$options);
 
 Simple example:
 ```
-require_once('SendOauth2A.php');
+require_once 'decomplexity/sendoauth2/src/SendOauth2A.php';
 
 new SendOauth2A ($mailStatus,[
 'mailTo' => ['john.doe@deer.com'],
@@ -168,7 +171,7 @@ Note that when specifying a PHP variable as an array argument, it will only be r
 
 More comprehensive example:
 ```
-require_once('SendOauth2A.php');
+require_once 'decomplexity/sendoauth2/src/SendOauth2A.php';
 
 new SendOauth2A ($mailStatus,[
 'mailTo' => ['john.doe@deer.com, John Doe', 'jaime.matador@gmail.com,Jaime Cordobes'],
