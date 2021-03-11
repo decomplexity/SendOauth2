@@ -7,7 +7,6 @@ Google support is for any Gmail.
   
 *Why wrap?* Non-trivial websites typically use email at many points (Contact pages, purchase confirmations, PayPal IPNs and so on), and incorporating PHPMailer invocation code and mail settings in each such page is a pain, especially if OAuth2 is set up to use a different Client Secret (and possibly even a different Client ID) for each point  - which is the recommended secure approach. 
 
-**NOTE: the zip and tar.gz files assume that the constituent PHP class files are placed in the PARENT of /vendor. When SendOauth2 is released on Packagist for installation by Composer, installation will locate them within /vendor in the usual way (and a few redundant 'requires' will be removed)**.
 
 **1. CLASSES**
 SendOauth2 consists of four PHP classes held in PHP files of those names:
@@ -204,7 +203,7 @@ https://mydomain.com/php/SendOauth2D-invoke.php
 To select security group 1, it merely needs to contain:
 ```
 session_start();  
-require_once 'SendOauth2D.php';
+require_once 'decomplexity/sendoauth2/src/SendOauth2D.php';
 new SendOauth2D ('1');
 $_SESSION = array();  
 ```
