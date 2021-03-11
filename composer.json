@@ -1,0 +1,35 @@
+{
+    "name": " decomplexity/sendoauth2",
+    "type": "library",
+    "description": "Wrapper for PHPMailer SMTP",
+    "license": "MIT",
+    "keywords": ["PHPMailer","OAuth2"],
+    "homepage": "https://github.com/decomplexity/SendOauth2",
+    "authors": [
+    {
+    "name": "Max Stewart",
+    "email": "SendOauth2@decomplexity.com",
+    "homepage": "https://www.decomplexity.com"
+       }
+       ],
+    "support": {
+        "email": "SendOauth2@decomplexity.com"
+         },
+    "repositories": [
+         {
+        "type": "vcs",
+        "url": "https://github.com/decomplexity/SendOauth2"
+         }
+         ],
+    "require": {
+        "php": ">=5.5.0",
+        "phpmailer/phpmailer": ">=6.3.0",
+        "thenetworg/oauth2-azure": ">=2.0.1",
+        "league/oauth2-google": ">=4.0.0"
+       },
+    "autoload": {
+        "psr-4": {
+        "decomplexity\\sendoauth2\\": "src/"
+        }
+      }
+     }
