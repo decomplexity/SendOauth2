@@ -1,5 +1,5 @@
 {
-    "name": " decomplexity/sendoauth2",
+    "name": "decomplexity/sendoauth2",
     "type": "library",
     "description": "Wrapper for PHPMailer SMTP",
     "license": "MIT",
