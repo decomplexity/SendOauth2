@@ -21,7 +21,7 @@
         "url": "https://github.com/decomplexity/SendOauth2"
          }
          ],
-    "require":{
+    "require": {
         "php": ">=5.5.0",
         "phpmailer/phpmailer": ">=6.3.0",
         "thenetworg/oauth2-azure": ">=2.0.1",
