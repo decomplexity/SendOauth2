@@ -9,7 +9,22 @@ Google support is for any Gmail.
 
 
 **1. CLASSES**
-SendOauth2 consists of four PHP classes held in PHP files of those names:
+SendOauth2 consists of four PHP classes held in PHP files of those names.
+
+FLOW SUMMARY
+
+Microsoft and Google OAauth2 settings => paste => SendOauth2D
+
+Invoke SendOauth2D  <=> SendOauth2C (provider factory)
+
+SendOauth2D => writes interchange file containing inter alia a refresh token
+
+Invoke SendOauth2A => SendOauth2B to read interchange file
+
+SendOauth2B authenticates, then => SendOauth2A for PHPMailer sending
+
+THE CLASSES
+
 - SendOauth2A -  instantiated from  global PHP (see examples later)
 - SendOauth2B -  instantiated from SendOauthA, primarily to perform Oauth2 authentication
 - SendOauth2C -  the Provider factory class. It is instantiated from SendOauth2B AND from SendOauth2D
@@ -23,18 +38,6 @@ When SendOauth2A is instantiated from a web page for example, the relevant group
 
 ClientId, clientSecret, redirectURI and refreshToken thus only need to be copied from Microsoft  AAD or Google console.cloud into SendOauth2D. There is no need to replicate this into the code that invokes PHPMailer because is available 'on file'. This also means that if necessary, SendOauth2D can be moved afterwards to somewhere more secure, and there are dummy encrypt and decrypt point indicators in SendOauth2D and SendOauth2B respectively if developers wish to add further security to the interchange files.
 
-FLOW SUMMARY
-
-
-Microsoft and Google OAauth2 settings => paste => SendOauth2D
-
-Invoke SendOauth2D  <=> SendOauth2C (provider factory)
-
-SendOauth2D => writes interchange file containing inter alia a refresh token
-
-Invoke SendOauth2A => SendOauth2B to read interchange file
-
-SendOauth2B authenticates, then => SendOauth2A for PHPMailer sending
 
 
 **2. SERVICE SETTINGS:**
@@ -48,18 +51,18 @@ Google is simpler, but it is worth ensuring that when adding permissions via the
 
 **3. PROVIDERS:**
 The Gmail provider is the PHP League * *oauth2-google* *  written by Woody Gilk and others.
-The Microsoft  provider is thenetworg * *oauth2-azure* * written primarily by Jan Hajek.
+The Microsoft  provider is thenetworg * *oauth2-azure* * written by Jan Hajek and others.
 
  
 
 **4. INSTALLATION**
 Use Composer to get the latest stable versions of SendOauth2, PHPMailer, thenetworg's Microsoft provider and PHP League oauth2-google provider
 
-NB: one code change is currently needed to the Microsoft provider thenetworg oauth2-azure Azure.php
+**NB: one code change is currently needed to the Microsoft provider thenetworg oauth2-azure Azure.php
 This cannot be done as an override:
-- for release 2.0.1, at line 214, replace * *graph.windows.net* * by * *graph.microsoft.com* *  
+- for release 2.0.1, at line 214, replace * *graph.windows.net* * by * *graph.microsoft.com* * ** 
 
-Composer will install SendOauth2, PHPMailer and the providers in your php’s /vendor  folder.
+Composer will install SendOauth2, PHPMailer and the providers in your site's /vendor  folder.
 
 
 **5. SendOauth2D SETTINGS:**
@@ -85,8 +88,13 @@ new SendOauth2A ($mailStatus,$options)
 It is preceded by:
 require_once 'decomplexity/sendoauth2/src/SendOauth2A.php';
 
-and followed by your test for success or failure ($mailStatus returns "OK" for a successful send):
+namespace decomplexity\SendOauth2;
+session_start();
+require 'vendor/autoload.php';
 
+
+and followed by clearing thw session variables and then your test for success or failure ($mailStatus returns "OK" for a successful send):
+$_SESSION = array(); 
 if ($mailStatus == "OK") {
 echo ("Email sent OK");
 }
@@ -152,7 +160,9 @@ new SendOauth2A ($mailStatus,$options);
 
 Simple example:
 ```
-require_once 'decomplexity/sendoauth2/src/SendOauth2A.php';
+namespace decomplexity\SendOauth2;
+session_start();
+require 'vendor/autoload.php';
 
 new SendOauth2A ($mailStatus,[
 'mailTo' => ['john.doe@deer.com'],
@@ -160,6 +170,7 @@ new SendOauth2A ($mailStatus,[
 'mailText'=>'Lovely photo you sent. Tnx',
 'mailAuthSet' => ‘1’
 ]);
+$_SESSION = array();
 
 if ($mailStatus == "OK") {
 echo ("Email sent OK");
@@ -176,7 +187,9 @@ Note that when specifying a PHP variable as an array argument, it will only be r
 
 More comprehensive example:
 ```
-require_once 'decomplexity/sendoauth2/src/SendOauth2A.php';
+namespace decomplexity\SendOauth2;
+session_start();
+require 'vendor/autoload.php';
 
 new SendOauth2A ($mailStatus,[
 'mailTo' => ['john.doe@deer.com, John Doe', 'jaime.matador@gmail.com,Jaime Cordobes'],
@@ -190,6 +203,8 @@ new SendOauth2A ($mailStatus,[
 'mailAttachInline' =>['coatofarms.jpg, cholmondeley-pic'],
 'mailAuthSet' => ‘1’
 ]);
+
+$_SESSION = array();
 
 if ($mailStatus == "OK") {
 echo ("Email sent OK");
@@ -210,8 +225,11 @@ https://mydomain.com/php/SendOauth2D-invoke.php
 
 To select security group 1, it merely needs to contain:
 ```
-session_start();  
-require_once 'decomplexity/sendoauth2/src/SendOauth2D.php';
+namespace decomplexity\SendOauth2;
+session_start(); 
+require 'vendor/autoload.php';
+
 new SendOauth2D ('1');
-$_SESSION = array();  
+
+$_SESSION = array(); 
 ```
