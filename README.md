@@ -86,7 +86,6 @@ So instantiation looks something like:
 new SendOauth2A ($mailStatus,$options)
 
 It is preceded by:
-require_once 'decomplexity/sendoauth2/src/SendOauth2A.php';
 
 namespace decomplexity\SendOauth2;
 session_start();
