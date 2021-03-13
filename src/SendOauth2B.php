@@ -4,7 +4,7 @@
  * SendOauth2B Wrapper For Microsoft and Google OIDC/OAUTH2 For PHPMailer
  * PHP Version 5.5 and greater
  *
- * @version  1.0.0
+ * @version  1.0.3
  * @category Class
  * @see      https://github.com/PHPMailer/PHPMailer/ The PHPMailer GitHub project
  * @author   Max Stewart (decomplexity) <SendOauth2@decomplexity.com>
