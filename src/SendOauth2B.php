@@ -11,7 +11,7 @@
  * @copyright  2021 Max Stewart
  * @license  MIT
  */
- namespace decomplexity/SendOauth2;
+ namespace decomplexity\SendOauth2;
 
 /**  if autoload fails to load the two class-files needed, load them with:    
      require_once 'decomplexity/sendoauth2/src/SendOauth2C.php';
