@@ -12,7 +12,7 @@
  * @license  MIT
  */
 
-namespace decomplexity/SendOauth2;
+namespace decomplexity\SendOauth2;
 
 /**  if autoload fails to load the two class-files needed, load them with:    
 require_once 'thenetworg/oauth2-azure/src/Provider/Azure.php';
