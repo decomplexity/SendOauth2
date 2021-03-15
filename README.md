@@ -5,7 +5,20 @@ SendOauth2 supports both OAuth2 and Basic authentication for both Microsoft and 
 Microsoft support is primarily for Microsoft 365 accounts using Graph V1 with the V2 authentication and authorization endpoints.
 Google support is for any Gmail.
   
-*Why wrap?* Non-trivial websites typically use email at many points (Contact pages, purchase confirmations, PayPal IPNs and so on), and incorporating PHPMailer invocation code and mail settings in each such page is a pain, especially if OAuth2 is set up to use a different Client Secret (and possibly even a different Client ID) for each point  - which is the recommended secure approach. 
+*Why wrap?* Non-trivial websites typically use email at many points (Contact pages, purchase confirmations, PayPal IPNs and so on), and incorporating PHPMailer invocation code and mail settings in each such page is a pain, especially if OAuth2 is set up to use a different Client Secret (and possibly even a different Client ID) for each point  - which is the recommended secure approach.
+
+Using the SendOauth2 wrapper, a page can contain as little as:  
+
+```php
+new SendOauth2A ($mailStatus,[
+'mailTo' => ['john.doe@deer.com'],
+'mailSubject' => 'Deer dear!',
+'mailText'=>'Lovely photo you sent. Tnx',
+'mailAuthSet' => ‘1’
+]);
+```
+
+plus a few extra 'admin' lines of PHP. 
 
 
 **1. CLASSES**
@@ -76,7 +89,7 @@ Both of these can be overridden when SendOauth2A is invoked.
 
 
 **6. SendOauth2A INSTANTIATION:**
-```
+```php
 SendOauth2A has two arguments:
 $mailStatus
 $options - an array of the options described below
@@ -158,7 +171,7 @@ new SendOauth2A ($mailStatus,$options);
 ```
 
 Simple example:
-```
+```php
 namespace decomplexity\SendOauth2;
 session_start();
 require 'vendor/autoload.php';
@@ -185,7 +198,7 @@ Note that when specifying a PHP variable as an array argument, it will only be r
 
 
 More comprehensive example:
-```
+```php
 namespace decomplexity\SendOauth2;
 session_start();
 require 'vendor/autoload.php';
@@ -223,7 +236,7 @@ So the redirect URI looks something like:
 https://mydomain.com/php/SendOauth2D-invoke.php
 
 To select security group 1, it merely needs to contain:
-```
+```php
 namespace decomplexity\SendOauth2;
 session_start(); 
 require 'vendor/autoload.php';
