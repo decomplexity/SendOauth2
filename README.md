@@ -30,7 +30,7 @@ There are three further files that are distributed in this folder but should be 
 
 
 
-![SendOauth2 flow diagram](https://user-images.githubusercontent.com/65123375/111808913-5bd00f00-88cc-11eb-8d37-bc9c41b75c46.gif, width=70% height=auto)
+![SendOauth2 flow diagram](https://user-images.githubusercontent.com/65123375/111808913-5bd00f00-88cc-11eb-8d37-bc9c41b75c46.gif)
 
 
 FLOW SUMMARY
