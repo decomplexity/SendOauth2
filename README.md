@@ -28,6 +28,11 @@ SendOauth2 consists of four PHP classes held in PHP files of those names, stored
 
 There are three further files that are distributed in this folder but should be moved to /vendor's parent folder because developer will modify them. One file (SendOauth2D-settings) is a template for authenticating to four email services: Microsoft 365 OAuth2, Microsoft 365 Basic Authentication (userid and password), Google Gmail OAuth2 and Google Gmail Basic Authentication. This file is in the form of a PHP 'switch' block with four 'cases' and is required by class SendOauth2D. The other two files (SendOauth2A-invoke and SendOauth2D-invoke) are templates for instantiating SendOauth2A and SendOauthD. The sample code in SendOauth2A-invoke is intended to be edited and pasted into the developer's website pages.     
 
+
+
+![SendOauth2 diagram](https://user-images.githubusercontent.com/65123375/111808913-5bd00f00-88cc-11eb-8d37-bc9c41b75c46.gif, style="width:80%;height:auto")
+
+
 FLOW SUMMARY
 
 Microsoft and Google OAauth2 settings => paste => SendOauth2D
