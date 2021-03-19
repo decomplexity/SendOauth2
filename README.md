@@ -30,7 +30,6 @@ There are three further files that are distributed in this folder but should be 
 
 
 
-img[src*="#diagram"] {width:70%; height:auto; border:solid red 10px; border-radius:10px, margin:auto}
 ![SendOauth2 flow diagram](https://user-images.githubusercontent.com/65123375/111808913-5bd00f00-88cc-11eb-8d37-bc9c41b75c46.gif#diagram)
 
 
@@ -52,14 +51,14 @@ THE CLASSES
 - SendOauth2B -  instantiated from SendOauthA, primarily to perform Oauth2 authentication
 - SendOauth2C -  the Provider factory class. It is instantiated from SendOauth2B AND from SendOauth2D
 - SendOauth2D -  is instantiated standalone from a few lines of global PHP such as in section 7 below.
-It contains security settings such as clientId, clientSecret, redirectURI, service provider (Microsoft, Google) and authentication type (e.g. XOAUTH2).
+It 'requires' a file SendOauth2D-settings.php that contains security settings such as clientId, clientSecret, redirectURI, service provider (Microsoft, Google) and authentication type (e.g. XOAUTH2).
 There is a group of these security settings for each PHPMailer invocation (typically one website page) that needs different security settings or a different provider: one website can use any combination of Microsoft and Google (and any others added further to SendOauth2C) and any number of different security groups. 
-Each setting has unique identifier (numbered 1,2,3,4 in the skeleton SendOauth2D, but developers are free to use anything more meaningful. 
+Each setting has unique identifier (numbered 1,2,3,4 in the template SendOauth2D-settings), but developers are free to use anything more meaningful. 
 When SendOauth2D is instantiated by SendOauth2D-invoke (see Section 7 below), the latter specifies the group number, and SendOauth2D then produces an 'interchange' file with (for OAuth2) a refresh token plus other security settings such as client ID and client Secret. If a Basic authentication group is selected, the file output is similar but includes an SMTP password and excludes Oauth2 settings. There is one interchange file for each group of security settings.
 			   
 When SendOauth2A is instantiated from a web page for example, the relevant group number is passed to it. This in turn is passed to SendOauth2B which reads the appropriate interchange file of security settings. 
 
-ClientId, clientSecret, redirectURI and refreshToken thus only need to be copied from Microsoft  AAD or Google console.cloud into SendOauth2D. There is no need to replicate this into the code that invokes PHPMailer because is available 'on file'. This also means that if necessary, SendOauth2D can be moved afterwards to somewhere more secure, and there are dummy encrypt and decrypt point indicators in SendOauth2D and SendOauth2B respectively if developers wish to add further security to the interchange files.
+ClientId, clientSecret, redirectURI and refreshToken thus only need to be copied from Microsoft  AAD or Google console.cloud into SendOauth2D-settings. There is no need to replicate this into the code that invokes PHPMailer because is available 'on file'. This also means that if necessary, SendOauth2D-settings can be moved afterwards to somewhere more secure, and there are dummy encrypt and decrypt point indicators in SendOauth2D and SendOauth2B respectively if developers wish to add further security to the interchange files.
 
 
 
@@ -85,13 +84,18 @@ Use Composer to get the latest stable versions of SendOauth2, PHPMailer, thenetw
 This cannot be done as an override:
 - for release 2.0.1, at line 214, replace * *graph.windows.net* * by * *graph.microsoft.com* * ** 
 
-Composer will install SendOauth2, PHPMailer and the providers in your site's /vendor  folder.
+Composer will install SendOauth2, PHPMailer and the providers in your site's vendor/decomplexity/sendoauth2/src folder; merely specify in your json: 
+{
+    "require": {
+        "decomplexity/SendOauth2": ">=1.0.5"
+}
+}
+
 
 
 **5. SendOauth2D SETTINGS:**
-To define security settings to SendOauth2D:
-- Simply scroll down to the switch section that contains some sample security groups.
-- Select an appropriate one (Microsoft XOAUTH2 is the first and the default) and insert your own settings copied from Microsoft AAD or Google console.cloud.
+To define security settings to SendOauth2D-settings:
+- Select an appropriate sample security groups (Microsoft XOAUTH2 is the first and the default) and insert your own settings copied from Microsoft AAD or Google console.cloud.
 There are two additional settings:
  - 'SMTPAddressDefault' - which you set to the user principal name (e.g. the AAD admin email address)
  - 'fromNameDefault' - the default you want to use for the email * *From* * name
@@ -239,11 +243,11 @@ echo ("Sending failed. Error message: ". $mailStatus);
 
 
 **7. SendOauth2D INSTANTIATION:**
-The global code you use to instantiate SendOauth2D MUST have the same URI as the redirect URI you specify to Microsoft AAD or Google console.cloud. SendOauth2D-invoke.php is one such file.
+The code you use to instantiate SendOauth2D **MUST** have the same URI as the redirect URI you specify to Microsoft AAD or Google console.cloud. SendOauth2D-invoke.php is one such file, but remember that SendOauth2D-invoke must be moved from the vendor/decomplexity/sendoauth2/src folder (where it was originally installed by Composer) to the parent of the /vendor folder.   
 
 
 So the redirect URI looks something like:
-https://mydomain.com/php/SendOauth2D-invoke.php
+https://mydomain.com/SendOauth2D-invoke.php
 
 To select security group 1, it merely needs to contain:
 ```php
@@ -253,5 +257,4 @@ require 'vendor/autoload.php';
 
 new SendOauth2D ('1');
 
-$_SESSION = array(); 
 ```
