@@ -5,7 +5,7 @@ SendOauth2 supports both OAuth2 and Basic authentication for both Microsoft and 
 Microsoft support is primarily for Microsoft 365 accounts using Graph V1 with the V2 authentication and authorization endpoints.
 Google support is for any Gmail.
   
-*Why wrap?* Non-trivial websites typically use email at many points (Contact pages, purchase confirmations, PayPal IPNs and so on), and incorporating PHPMailer invocation code and mail settings in each such page is a pain, especially if OAuth2 is set up to use a different Client Secret (and possibly even a different Client ID) for each point  - which is the recommended secure approach.
+*Why wrap?* Non-trivial websites typically use email at many points (Contact pages, purchase confirmations, PayPal IPNs and so on), and incorporating PHPMailer invocation code and mail settings in each such page is a pain for maintenance, especially if OAuth2 is set up to use a different Client Secret (and possibly even a different Client ID) for each point  - which is the recommended secure approach.
 
 Using the SendOauth2 wrapper, a page can contain as little as:  
 
@@ -20,9 +20,13 @@ new SendOauth2A ($mailStatus,[
 
 plus a few extra 'admin' lines of PHP. 
 
+SendOauth2's aim is to simplify the implementation of Oauth2 authentication and authorisation that, particularly for Microsoft, is considerably more complex than Basic Authentication, although SendOauth2 also supports Basic Authentication in order to make transition to OAuth2 easier.      
 
-**1. CLASSES**
-SendOauth2 consists of four PHP classes held in PHP files of those names.
+
+**1. CLASSES and FILES**
+SendOauth2 consists of four PHP classes held in PHP files of those names, stored by default in the vendor/decomplexity/sendoauth2/src folder.
+
+There are three further files that are distributed in this folder but should be moved to /vendor's parent folder because developer will modify them. One file (SendOauth2D-settings) is a template for authenticating to four email services: Microsoft 365 OAuth2, Microsoft 365 Basic Authentication (userid and password), Google Gmail OAuth2 and Google Gmail Basic Authentication. This file is in the form of a PHP 'switch' block with four 'cases' and is required by class SendOauth2D. The other two files (SendOauth2A-invoke and SendOauth2D-invoke) are templates for instantiating SendOauth2A and SendOauthD. The sample code in SendOauth2A-invoke is intended to be edited and pasted into the developer's website pages.     
 
 FLOW SUMMARY
 
