@@ -1,0 +1,26 @@
+<?php
+    /**
+     * see the README for a description
+     * and a more comprehensive example
+     */ 
+
+    namespace decomplexity\SendOauth2;
+    session_start();
+    require 'vendor/autoload.php';
+
+    new SendOauth2A ($mailStatus,[
+    'mailTo' => ['john.doe@deer.com'],
+    'mailSubject' => 'Deer dear!',
+    'mailText'=>'Lovely photo you sent. Tnx',
+    'mailAuthSet' => ‘1’
+    ]);
+
+    $_SESSION = array();
+
+    if ($mailStatus == "OK") {
+      echo ("Email sent OK");
+    }
+    else
+    {
+      echo ("Sending failed. Error message: " . $mailStatus); 
+    }
