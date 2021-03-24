@@ -11,7 +11,7 @@
  * @license  MIT
  */
 
-namespace decomplexity\sendoauth2;
+namespace decomplexity\SendOauth2;
 
 /**
 if autoload fails to load the class-files needed, load them with the following: 
