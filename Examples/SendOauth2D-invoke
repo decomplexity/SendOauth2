@@ -1,0 +1,12 @@
+<?php
+    /**
+     * see the README for a description
+     */
+
+
+    namespace decomplexity\SendOauth2;
+    session_start(); 
+
+    require 'vendor/autoload.php';
+    new SendOauth2D ('1');
+   
