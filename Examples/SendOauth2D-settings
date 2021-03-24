@@ -1,0 +1,83 @@
+        <?php
+        
+        switch ($this->mailAuthSet) {
+
+       /**
+        * $authTypeSetting is either CRAM-MD5, LOGIN, PLAIN or XOAUTH2
+        * this wrapper is essentially for XOAUTH2
+        * PLAIN is not recommended!
+        */
+
+            case "1": // Microsoft Oauth2
+            default:
+                $optionsD = [
+                'clientId'                  => 'long string',
+                'clientSecret'              => 'long string',
+                'redirectURI'               => 'https://www.mydomain.com/php/SendOauth2D-invoke.php',
+                'serviceProvider'           => 'Microsoft',
+                'authTypeSetting'           => 'XOAUTH2',
+                'SMTPAddressDefault'        => 'me@mydomain.com',
+                'fromNameDefault'           => 'My website',
+                 ];
+               /**
+                *  refresh indicator and the refreshToken is added later by SendOauth2D
+                */
+
+              /**
+               * invoke the provider and set overrides
+               * but first tell Send_Oauth_C that when the provider is instantiated
+               * it must request a refresh token
+               */
+                $optionsD['refresh'] = true;
+                break;
+
+
+            case "2": // Microsoft Basic Auth
+                $optionsD = [
+                'serviceProvider'           =>  'Microsoft',
+                'authTypeSetting'           =>  'LOGIN',
+                'SMTPAddressDefault'        =>  'me@mydomain.com',
+                'fromNameDefault'           =>  'My website',
+                'SMTPPassword'              =>  'basic authentication password'
+                ];
+
+            /**
+            * just to be consistent, although it should be irrelevant...
+            */
+                $optionsD['refresh'] = false;
+                break;
+
+
+            case "3": // Google
+                $optionsD = [
+                'clientId'                  =>  'long string',
+                'clientSecret'              =>  'long string',
+                'redirectURI'               =>  'https://www.mydomain.com/php/SendOauth2D-invoke.php',
+                'serviceProvider'           =>  'Google',
+                'authTypeSetting'           =>  'XOAUTH2',
+                'SMTPAddressDefault'        =>  'an email address',
+                'fromNameDefault'           =>  'My website',
+                ];
+
+                $optionsD['refresh'] = true;
+                break;
+
+
+            case "4": // Google Basic Auth
+                $optionsD = [
+                'serviceProvider'           =>  'Google',
+                'authTypeSetting'           =>  'LOGIN',
+                'SMTPAddressDefault'        =>  'me@gmail.com',
+                'fromNameDefault'           =>  'My website',
+                'SMTPPassword'              =>  'basic authentication password'
+                ];
+
+                $optionsD['refresh'] = false;
+                break;
+
+
+       /**
+        *  ends switch
+        */
+        }
+        ?>
