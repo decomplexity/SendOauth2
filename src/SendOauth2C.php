@@ -4,7 +4,6 @@
  * SendOauth2C Wrapper For Microsoft and Google OIDC/OAUTH2 For PHPMailer
  * PHP Version 5.5 and greater
  *
- * @version  1.0.3
  * @category Class
  * @see      https://github.com/PHPMailer/PHPMailer/ The PHPMailer GitHub project
  * @author   Max Stewart (decomplexity) <SendOauth2@decomplexity.com>
@@ -14,13 +13,15 @@
 
 namespace decomplexity\SendOauth2;
 
-/**  if autoload fails to load the two class-files needed, load them with:    
-require_once 'thenetworg/oauth2-azure/src/Provider/Azure.php';
-require_once 'league/oauth2-google/src/Provider/Google.php';
+/**  if autoload fails to load the class-files needed, load them with the following:   
+require_once 'vendor/thenetworg/oauth2-azure/src/Provider/Azure.php';
+require_once 'vendor/league/oauth2-google/src/Provider/Google.php';
 */
 
 use TheNetworg\OAuth2\Client\Provider\Azure;
 use League\OAuth2\Client\Provider\Google;
+
+
 /**
 
  * SendOauth2C Class Doc Comment
@@ -174,8 +175,9 @@ class SendOauth2C
 
                 $this->provider->urlAPI = "https://graph.microsoft.com/";
                 $this->provider->API_VERSION = '1.0';
-                $this->provider->defaultEndPointVersion = TheNetworg\OAuth2\Client\Provider\Azure::ENDPOINT_VERSION_2_0;
-
+                $this->provider->defaultEndPointVersion = \TheNetworg\OAuth2\Client\Provider\Azure::ENDPOINT_VERSION_2_0;
+              /* note \TheNetworg's \ prefix to prevent it being construed as in the decomplexity\Sendoauth2 namespace
+				
               /**
                  * NB  NB  NB  NB  NB  NB !
                  * One change is needed to provider's oauth2-azure-2.0.0 Azure.php
