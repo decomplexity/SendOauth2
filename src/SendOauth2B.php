@@ -4,21 +4,22 @@
  * SendOauth2B Wrapper For Microsoft and Google OIDC/OAUTH2 For PHPMailer
  * PHP Version 5.5 and greater
  *
- * @version  1.0.3
  * @category Class
  * @see      https://github.com/PHPMailer/PHPMailer/ The PHPMailer GitHub project
  * @author   Max Stewart (decomplexity) <SendOauth2@decomplexity.com>
  * @copyright  2021 Max Stewart
  * @license  MIT
  */
- namespace decomplexity\SendOauth2;
+      namespace decomplexity\SendOauth2;
 
-/**  if autoload fails to load the two class-files needed, load them with:    
-     require_once 'decomplexity/sendoauth2/src/SendOauth2C.php';
-     require_once 'phpmailer/phpmailer/src/OAuth.php';
+      use PHPMailer\PHPMailer\OAuth;
+
+/**  if autoload fails to load the two class-files needed, load them with:
+ 
+     require_once 'vendor/decomplexity/sendoauth2/src/SendOauth2C.php';
+     require_once 'vendor/phpmailer/phpmailer/src/OAuth.php';
 */
 
- use phpmailer\phpmailer\OAuth;
 
 /**
  * SendOauth2B Class Doc Comment
