@@ -3,27 +3,27 @@
  * SendOauth2C Wrapper For Microsoft and Google OIDC/OAUTH2 For PHPMailer
  * PHP Version 5.5 and greater
  *
- * @version  1.0.3
+ * @version  1.0.0
  * @category Class
  * @see      https://github.com/PHPMailer/PHPMailer/ The PHPMailer GitHub project
  * @author   Max Stewart (decomplexity) <SendOauth2@decomplexity.com>
  * @copyright  2021 Max Stewart
  * @license  MIT
  */
-namespace decomplexity\SendOauth2;
 
-/** if autoload fails to load the two class-files needed, load them with:  
-require_once 'phpmailer/phpmailer/src/OAuth.php';
-require_once 'thenetworg/oauth2-azure/src/Provider/Azure.php';
+namespace decomplexity\sendoauth2;
+
+/**
+if autoload fails to load the class-files needed, load them with the following: 
+require_once 'vendor/phpmailer/phpmailer/src/OAuth.php';
+require_once 'vendor/thenetworg/oauth2-azure/src/Provider/Azure.php';
+require_once 'vendor/league/oauth2-google/src/Provider/Google.php';
+require_once 'vendor/decomplexity/sendoauth2/src/SendOauth2C.php';
 */
 
-
-///require_once 'league/oauth2-google/src/Provider/Google.php';
-//require_once 'decomplexity/sendoauth2/src/SendOauth2C.php';
-
 use phpmailer\phpmailer\OAuth;
-//use TheNetworg\OAuth2\Client\Provider\Azure;
-//use League\OAuth2\Client\Provider\Google;
+use TheNetworg\OAuth2\Client\Provider\Azure;
+use League\OAuth2\Client\Provider\Google;
 
 
      /**
@@ -99,7 +99,7 @@ class SendOauth2D
 
         $this->mailAuthSet = $mailAuthSet;
 
-        switch ($this->mailAuthSet) {
+        
 
         /** ======================================================================================= */
         /**
@@ -108,82 +108,13 @@ class SendOauth2D
         * PLAIN is not recommended!
         '*/
 
-            case "1": // Microsoft Oauth2
-            default:
-                $optionsD = [
-                'clientId'                  => 'long string',
-                'clientSecret'              => 'long string',
-                'redirectURI'               => 'https://www.mydomain.com/php/SendOauth2D-invoke.php',
-                'serviceProvider'           => 'Microsoft',
-                'authTypeSetting'           => 'XOAUTH2',
-                'SMTPAddressDefault'        => 'me@mydomain.com',
-                'fromNameDefault'           => 'My website',
-                 ];
-               /**
-                *  refresh indicator and the refreshToken is added later
-                */
+       /** now pull in the switch settings (clientId, clientSecret, redirectURI, serviceProvider, authTypeSetting,
+	       SMTPAddressDefault, fromNameDefault and (for basic auth) SMTPPassword
+	    */
+        
 
-              /**
-               * invoke the provider and set overrides
-               * but first tell Send_Oauth_C that when the provider is instantiated
-               * it must request a refresh token
-               */
-                $optionsD['refresh'] = true;
-                break;
+        require_once 'SendOauth2D-settings.php';
 
-
-            case "2": // Microsoft Basic Auth
-                $optionsD = [
-                'serviceProvider'           =>  'Microsoft',
-                'authTypeSetting'           =>  'LOGIN',
-                'SMTPAddressDefault'        =>  'me@mydomain.com',
-                'fromNameDefault'           =>  'My website',
-                'SMTPPassword'              =>  'basic authentication password'
-                ];
-
-            /**
-            * just to be consistent, although it should be irrelevant...
-            */
-                $optionsD['refresh'] = false;
-                break;
-
-
-            case "3": // Google
-                $optionsD = [
-                'clientId'                  =>  'long string',
-                'clientSecret'              =>  'long string',
-                'redirectURI'               =>  'https://www.mydomain.com/php/SendOauth2D-invoke.php',
-                'serviceProvider'           =>  'Google',
-                'authTypeSetting'           =>  'XOAUTH2',
-                'SMTPAddressDefault'        =>  'an email address',
-                'fromNameDefault'           =>  'My website',
-                ];
-
-
-
-                $optionsD['refresh'] = true;
-                break;
-
-
-            case "4": // Google Basic Auth
-                $optionsD = [
-                'serviceProvider'           =>  'Google',
-                'authTypeSetting'           =>  'LOGIN',
-                'SMTPAddressDefault'        =>  'me@gmail.com',
-                'fromNameDefault'           =>  'My website',
-                'SMTPPassword'              =>  'basic authentication password'
-                ];
-
-                $optionsD['refresh'] = false;
-                break;
-
-
-      /** ======================================================================================= */
-
-        /**
-        *  ends switch
-        */
-        }
 
        /**
        * if not Oauth2, then bypass obtaining authorization and refresh codes
@@ -224,15 +155,22 @@ class SendOauth2D
 
                       $authUrl = $provider->getAuthorizationUrl($options);
                       $_SESSION['oauth2state'] = $provider->getState();
-                      header('Location: ' . $authUrl);
+					  session_write_close(); 
+					  header('Location: ' . $authUrl);
                       exit;
 
                   /**
                   * Check given state against previously stored one to mitigate CSRF attack
                   */
-            } elseif (empty($_GET['state']) || ($_GET['state'] !== $_SESSION['oauth2state'])) {
-                 unset($_SESSION['oauth2state']);
-                 exit('Invalid state');
+              } elseif (empty($_GET['state']) || ($_GET['state'] !== $_SESSION['oauth2state'])) {
+                 
+				 echo ('ERROR - INVALID STATE <br />'); 
+				 echo ('&state in URL = ' . $_GET['state'] .'<br />');
+				 echo ('$_SESSION["oauth2state"] = ' . $_SESSION['oauth2state'] . '<br />');
+				 echo ('Check redirect URL, client ID, and URL - NB www or no prefix - used to invoke SendOauthD-invoke');
+				 				 				 			 				 
+				 unset($_SESSION['oauth2state']);
+                 exit();
             } else {
                 $token = $provider->getAccessToken('authorization_code', [
                     'code' => $_GET['code'],
@@ -307,7 +245,7 @@ class SendOauth2D
         $optionsD['fromNameDefault'],
         $optionsD['SMTPAddressDefault'],
         $optionsD['SMTPPassword'],
-		    $optionsD['hostedDomain'],
+		$optionsD['hostedDomain'],
         $optionsD['refresh'],
         $optionsD['refreshToken']
         ];
