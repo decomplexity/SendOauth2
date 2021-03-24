@@ -26,7 +26,7 @@ SendOauth2's aim is to simplify the implementation of Oauth2 authentication and 
 **1. CLASSES and FILES**
 SendOauth2 consists of four PHP classes held in PHP files of those names, stored by default in the vendor/decomplexity/sendoauth2/src folder.
 
-There are three further files that are distributed in this folder but should be moved to /vendor's parent folder because developer will modify them. One file (SendOauth2D-settings) is a template for authenticating to four email services: Microsoft 365 OAuth2, Microsoft 365 Basic Authentication (userid and password), Google Gmail OAuth2 and Google Gmail Basic Authentication. This file is in the form of a PHP 'switch' block with four 'cases' and is required by class SendOauth2D. The other two files (SendOauth2A-invoke and SendOauth2D-invoke) are templates for instantiating SendOauth2A and SendOauthD. The sample code in SendOauth2A-invoke is intended to be edited and pasted into the developer's website pages.     
+There are three further files that are distributed in the Examples folder and should be moved to /vendor's parent folder for modification by the developer. One file (SendOauth2D-settings) is a template for authenticating to four email services: Microsoft 365 OAuth2, Microsoft 365 Basic Authentication (userid and password), Google Gmail OAuth2 and Google Gmail Basic Authentication. This file is in the form of a PHP 'switch' block with four 'cases' and is required by class SendOauth2D. The other two files (SendOauth2A-invoke and SendOauth2D-invoke) are templates for instantiating SendOauth2A (which 'sends mail') and SendOauthD (which acquires OAuth2 refresh tokens). The sample code in SendOauth2A-invoke is intended to be edited and incorporated into the developer's website pages.      
 
 
 
@@ -63,8 +63,7 @@ ClientId, clientSecret, redirectURI and refreshToken thus only need to be copied
 
 
 **2. SERVICE SETTINGS:**
-For Microsoft AAD client setup , it appears unnecessary to add 'offline_access' and 'SMTP.Send' Graph permissions as long as SendOauth2D 
-authenticates with a logon using the user principal name (email address). This may be a result of Microsoft implementing Exchange (outlook.office.com) as the resource API for OAuth2 authenticated SMTP Send but not Graph (although Exchange does not itself now have a SMTP.Send permission to use!)
+For Microsoft AAD client setup , it appears unnecessary to add 'offline_access' and 'SMTP.Send' Graph permissions as long as SendOauth2D authenticates with a logon using the user principal name (email address). This may be a result of Microsoft implementing Exchange (outlook.office.com) as the resource API for OAuth2 authenticated SMTP Send but not Graph (although Exchange does not itself now have a SMTP.Send permission to use!)
 If SendOauth2D authenticates with a logon from another email account in the same tenant, it IS necessary to add these as Graph permissions and 'grant Admin consent' for the tenant.
 
 Google is simpler, but it is worth ensuring that when adding permissions via the OAuth consent screen that the Gmail API has been enabled (or you won’t be able to find 'mail.google.com' in order to select it).
@@ -243,7 +242,7 @@ echo ("Sending failed. Error message: ". $mailStatus);
 
 
 **7. SendOauth2D INSTANTIATION:**
-The code you use to instantiate SendOauth2D **MUST** have the same URI as the redirect URI you specify to Microsoft AAD or Google console.cloud. SendOauth2D-invoke.php is one such file, but remember that SendOauth2D-invoke must be moved from the vendor/decomplexity/sendoauth2/src folder (where it was originally installed by Composer) to the parent of the /vendor folder.   
+The code you use to instantiate SendOauth2D **MUST** have **EXACTLY** the same URI as the redirect URI you specify to Microsoft AAD or Google console.cloud. SendOauth2D-invoke.php is one such file, but remember that SendOauth2D-invoke must be sited in the parent of the /vendor folder.   
 
 
 So the redirect URI looks something like:
