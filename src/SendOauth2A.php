@@ -1,8 +1,7 @@
 <?php
      /**
-       * SendOauth2A Wrapper for Microsoft OIDC/OAUTH2 For PHPMailer
+       * SendOauth2A Wrapper for Microsoft and Google OIDC/OAUTH2 For PHPMailer SMTP
        * PHP Version 5.5 and greater
-       * @version  1.0.3
        * @category   Class
        * @see        https://github.com/PHPMailer/PHPMailer/ The PHPMailer GitHub project
        * @author     Max Stewart (decomplexity) <SendOauth2@decomplexity.com>
@@ -13,28 +12,16 @@
 
 
        namespace decomplexity\SendOauth2;
-//     require 'vendor/autoload.php';
-  /**  if autoload fails to load the five class-files needed, load them with:    
-       require_once 'phpmailer/phpmailer/src/PHPMailer.php';
-       require_once 'phpmailer/phpmailer/src/SMTP.php';
-       require_once 'phpmailer/phpmailer/src/Exception.php';
-       require_once 'decomplexity/sendoauth2/src/SendOauth2B.php';
-       require_once 'decomplexity/sendoauth2/src/SendOauth2C.php';
-   */	   
+ 
+  /**  if autoload fails to load the class-files needed, load them with:  
+  
+      require_once 'vendor/phpmailer/phpmailer/src/PHPMailer.php';
+      require_once 'vendor/phpmailer/phpmailer/src/Exception.php';
+      require_once 'vendor/decomplexity/sendoauth2/src/SendOauth2B.php';
+   */
 
-
-//      require_once 'phpmailer/phpmailer/src/OAuth.php';
-//      require_once 'thenetworg/oauth2-azure/src/Provider/Azure.php';
-//      require_once 'league/oauth2-google/src/Provider/Google.php';
-
-
-//      use phpmailer\phpmailer\OAuth;
-//      use phpmailer\phpmailer\SMTP;
-//      use phpmailer\phpmailer\Exception;
-//      use TheNetworg\OAuth2\Client\Provider\Azure;
-//      use League\OAuth2\Client\Provider\Google;
-
-        use phpmailer\phpmailer\PHPMailer;
+      use PHPMailer\PHPMailer\PHPMailer;
+      use PHPMailer\PHPMailer\Exception;
 
     /**
      * SendOauth2A Wrapper for Microsoft and Google OIDC/OAUTH2 For PHPMailer
