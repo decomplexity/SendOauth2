@@ -246,7 +246,7 @@ The code you use to instantiate SendOauth2D **MUST** have **EXACTLY** the same U
 
 
 So the redirect URI looks something like:
-https://mydomain.com/SendOauth2D-invoke.php
+https://mydomain.com/php/SendOauth2D-invoke.php
 
 To select security group 1, it merely needs to contain:
 ```php
