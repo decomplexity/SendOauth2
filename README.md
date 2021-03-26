@@ -1,4 +1,4 @@
-# SendOauth2
+# **SendOauth2** #
 A wrapper for PHPMailer SMTP
 
 SendOauth2 supports both OAuth2 and Basic authentication for both Microsoft and Google.
@@ -14,7 +14,7 @@ new SendOauth2A ($mailStatus,[
 'mailTo' => ['john.doe@deer.com'],
 'mailSubject' => 'Deer dear!',
 'mailText'=>'Lovely photo you sent. Tnx',
-'mailAuthSet' => ‘1’
+'mailAuthSet' => '1'
 ]);
 ```
 
@@ -23,7 +23,7 @@ plus a few extra 'admin' lines of PHP.
 SendOauth2's aim is to simplify the implementation of Oauth2 authentication and authorisation that, particularly for Microsoft, is considerably more complex than Basic Authentication, although SendOauth2 also supports Basic Authentication in order to make transition to OAuth2 easier.      
 
 
-**1. CLASSES and FILES**
+## 1. CLASSES and FILES ##
 SendOauth2 consists of four PHP classes held in PHP files of those names, stored by default in the vendor/decomplexity/sendoauth2/src folder.
 
 There are three further files that are distributed in the Examples folder and should be moved to /vendor's parent folder for modification by the developer. One file (SendOauth2D-settings) is a template for authenticating to four email services: Microsoft 365 OAuth2, Microsoft 365 Basic Authentication (userid and password), Google Gmail OAuth2 and Google Gmail Basic Authentication. This file is in the form of a PHP 'switch' block with four 'cases' and is required by class SendOauth2D. The other two files (SendOauth2A-invoke and SendOauth2D-invoke) are templates for instantiating SendOauth2A (which 'sends mail') and SendOauthD (which acquires OAuth2 refresh tokens). The sample code in SendOauth2A-invoke is intended to be edited and incorporated into the developer's website pages.      
@@ -62,7 +62,7 @@ ClientId, clientSecret, redirectURI and refreshToken thus only need to be copied
 
 
 
-**2. SERVICE SETTINGS:**
+## 2. SERVICE SETTINGS: ##
 For Microsoft AAD client setup , it appears unnecessary to add 'offline_access' and 'SMTP.Send' Graph permissions as long as SendOauth2D authenticates with a logon using the user principal name (email address). This may be a result of Microsoft implementing Exchange (outlook.office.com) as the resource API for OAuth2 authenticated SMTP Send but not Graph (although Exchange does not itself now have a SMTP.Send permission to use!)
 If SendOauth2D authenticates with a logon from another email account in the same tenant, it IS necessary to add these as Graph permissions and 'grant Admin consent' for the tenant.
 
@@ -70,13 +70,13 @@ Google is simpler, but it is worth ensuring that when adding permissions via the
 
 
 
-**3. PROVIDERS:**
+## 3. PROVIDERS: ##
 The Gmail provider is the PHP League * *oauth2-google* *  written by Woody Gilk and others.
 The Microsoft  provider is thenetworg * *oauth2-azure* * written by Jan Hajek and others.
 
  
 
-**4. INSTALLATION**
+## 4. INSTALLATION ##
 Use Composer to get the latest stable versions of SendOauth2, PHPMailer, thenetworg's Microsoft provider and PHP League oauth2-google provider
 
 **NB: one code change is currently needed to the Microsoft provider thenetworg oauth2-azure Azure.php
@@ -92,7 +92,7 @@ Composer will install SendOauth2, PHPMailer and the providers in your site's ven
 
 
 
-**5. SendOauth2D SETTINGS:**
+## 5. SendOauth2D SETTINGS: ##
 To define security settings to SendOauth2D-settings:
 - Select an appropriate sample security groups (Microsoft XOAUTH2 is the first and the default) and insert your own settings copied from Microsoft AAD or Google console.cloud.
 There are two additional settings:
@@ -101,7 +101,7 @@ There are two additional settings:
 Both of these can be overridden when SendOauth2A is invoked.
 
 
-**6. SendOauth2A INSTANTIATION:**
+## 6. SendOauth2A INSTANTIATION: ##
 ```php
 SendOauth2A has two arguments:
 $mailStatus
@@ -193,7 +193,7 @@ new SendOauth2A ($mailStatus,[
 'mailTo' => ['john.doe@deer.com'],
 'mailSubject' => 'Deer dear!',
 'mailText'=>'Lovely photo you sent. Tnx',
-'mailAuthSet' => ‘1’
+'mailAuthSet' => '1'
 ]);
 $_SESSION = array();
 
@@ -226,7 +226,7 @@ new SendOauth2A ($mailStatus,[
 'mailText'=>'Re my knighthood - see <img src="cid:cholmondeley-pic"> for our coat of arms. A letter also attached',
 'mailAttach' =>['letter.jpg'],
 'mailAttachInline' =>['coatofarms.jpg, cholmondeley-pic'],
-'mailAuthSet' => ‘1’
+'mailAuthSet' => '1'
 ]);
 
 $_SESSION = array();
@@ -241,7 +241,7 @@ echo ("Sending failed. Error message: ". $mailStatus);
 ```
 
 
-**7. SendOauth2D INSTANTIATION:**
+## *7. SendOauth2D INSTANTIATION: ##
 The code you use to instantiate SendOauth2D **MUST** have **EXACTLY** the same URI as the redirect URI you specify to Microsoft AAD or Google console.cloud. SendOauth2D-invoke.php is one such file, but remember that SendOauth2D-invoke must be sited in the parent of the /vendor folder.   
 
 
