@@ -16,4 +16,15 @@ These are using the V2 authorisation and token endpoints – as recommended by M
 Microsoft has commented that, “We see that the permissions are under Microsoft Graph in the Azure portal, but in fact the same has been added to the outlook endpoint”. However,  Microsoft could pre-empt much confusion if it simply listed the outlook.office.com API in AAD API permissions until Graph accessed a complete set of endpoints as well as permissions. The present situation is akin to being half-pregnant!
 
 
+MSFT originally said that SMTP AUTH would not be included in Graph - and hence in its permissions list - but only in Office365. But it then unexpectedly  appeared in Graph, and an enable/disable switch added to the tenant (accessible via Powershell) which could be overridden at user level (accessible via a pulldown in the user account). What was not widely publicised was that the default for new tenants was ‘disabled’, and this is at the protocol level so did not just affect OAuth2.  
+ 
+Apparently less well known was that access tokens issued for the Graph API were V1 tokens even though they were requested from a V2 endpoint (V2 endpoints can issue V1 tokens and vice versa.) because access tokens are always of the type (version) appropriate for the API so you cannot mix API types in the same client scopes list. This caused us endless head-scratching when debugging during development. 
+*However this is not true for ID tokens which always conform to the endpoint version that issued them.*
+ 
+Finally, the access token scopes list must not span APIs anyway, so the client code needs to request tokens one by one. Since authorization codes cannot be reused, the common workaround appears to be to use the refresh token (acquired along with the first access token by specifying offline_access) to request a new access token for the second API, and so on.
+
+
+
+
+
 If your implementation refuses to authenticate, it is well worth reading: ‘Basic Authentication and Exchange Online – July update’ in the Microsoft Exchange Team blog (in https://techcommunity.microsoft.com). 
