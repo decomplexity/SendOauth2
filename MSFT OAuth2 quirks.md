@@ -1,5 +1,20 @@
-# SMTP Scopes and Permissions for Microsoft OAuth2 #
+# Scopes & Permissions for Microsoft OAuth2 SMTP #
 
+
+## Some key dates ##
+OAuth2 authentication and authorization was enabled by default for all new Microsoft 365 tenants from August 2017, and from October 2019 many new tenants had *Security Defaults*  in Azure Active Directory (AAD) enabled by default. Among other things, Security Defaults blocks Basic Authentication and forces multi-factor authentication across the tenant. 
+
+In July 2020 Microsoft annouced that it would disable SMTP, IMAP and other protocols using basic authentication for all tenants that weren't using them and introduced a simpler tenant-wide option for Admin to manage this (Settings > Org Settings > Modern Authentication). Microsoft noted at the time that this was complementary to control through Exchange profiles via Powershell and that to some extent covered they the same ground but with the latter giving greater granularity such as control at user rather than tenant level.
+
+Microsoft also confirmed that disabling SMTP, IMAP and other protocols using basic authentication for tenants that *were*  using them would be enforced in the second half of  2021. But in February 2021, Microsoft decommitted to this enforcement, merely saying that it was still in the Roadmap but would give twelvemonhts notice of enforcement. 
+
+Microsoft 365 Support for SMTP and IMAP authentication with OIDC and OAuth2 was introduced in April 2020 
+
+However, Microsoft's implementation of SMTP OAuth2 with permissions specified in Graph was confusing.  
+Although the SendOauth2 wrapper takes care of most of these quirks, diagnosing authentication problems can be difficult and cause some surprises - as will now be outlined!      
+
+
+## MSFT's SMTP OAuth2  implementation ## 
 Microsoft Oauth2 client scope with a URI of https://outlook.office.com (needed for SMTP AUTH or IMAP, for example) can be specified in a corresponding AAD permission but outlook.office.com is not listed in the resource API list!
 Microsofts pushes Graph (which does have e.g. an SMTP AUTH permission), but have confirmed that SMTP AUTH is implemented only in the outlook resource API. 
 
