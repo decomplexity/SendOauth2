@@ -5,7 +5,7 @@ SendOauth2 supports both OAuth2 and Basic authentication for both Microsoft and 
 Microsoft support is primarily for Microsoft 365 accounts using Graph V1 with the V2 authentication and authorization endpoints.
 Google support is for any Gmail.
   
-*Why wrap?* Non-trivial websites typically use email at many points (Contact pages, purchase confirmations, PayPal IPNs and so on), and incorporating PHPMailer invocation code and mail settings in each such page is a pain for maintenance, especially if OAuth2 is set up to use a different Client Secret (and possibly even a different Client ID) for each point  - which is the recommended secure approach.
+*Why wrap?* Non-trivial websites typically use email at many points (Contact pages, purchase confirmations, PayPal IPNs and so on), and incorporating PHPMailer invocation code and mail settings in each such page is a pain for maintenance, especially if OAuth2 is set up to use a different Client Secret (and possibly even a different Client ID) for each point  - which is the more secure approach.
 
 Using the SendOauth2 wrapper, a page can contain as little as:  
 
@@ -29,11 +29,11 @@ SendOauth2 consists of four PHP classes held in PHP files of those names, stored
 There are three further files that are distributed in the Examples folder and should be moved to /vendor's parent folder for modification by the developer. One file (SendOauth2D-settings) is a template for authenticating to four email services: Microsoft 365 OAuth2, Microsoft 365 Basic Authentication (userid and password), Google Gmail OAuth2 and Google Gmail Basic Authentication. This file is in the form of a PHP 'switch' block with four 'cases' and is required by class SendOauth2D. The other two files (SendOauth2A-invoke and SendOauth2D-invoke) are templates for instantiating SendOauth2A (which 'sends mail') and SendOauthD (which acquires OAuth2 refresh tokens). The sample code in SendOauth2A-invoke is intended to be edited and incorporated into the developer's website pages.      
 
 
+<p align=center>
+<img src=https://user-images.githubusercontent.com/65123375/111808913-5bd00f00-88cc-11eb-8d37-bc9c41b75c46.gif#diagram width=60%></img>
+</p>
 
-![SendOauth2 flow diagram](https://user-images.githubusercontent.com/65123375/111808913-5bd00f00-88cc-11eb-8d37-bc9c41b75c46.gif#diagram)
-
-
-FLOW SUMMARY
+**FLOW SUMMARY**
 
 Microsoft and Google OAauth2 settings => paste => SendOauth2D
 
@@ -45,7 +45,7 @@ Invoke SendOauth2A => SendOauth2B to read interchange file
 
 SendOauth2B authenticates, then => SendOauth2A for PHPMailer sending
 
-THE CLASSES
+**THE CLASSES**
 
 - SendOauth2A -  instantiated from  global PHP (see examples later)
 - SendOauth2B -  instantiated from SendOauthA, primarily to perform Oauth2 authentication
@@ -101,7 +101,26 @@ There are two additional settings:
 Both of these can be overridden when SendOauth2A is invoked.
 
 
-## 6. SendOauth2A INSTANTIATION: ##
+
+## *6. SendOauth2D INSTANTIATION: ##
+The code you use to instantiate SendOauth2D **MUST** have **EXACTLY** the same URI as the redirect URI you specify to Microsoft AAD or Google console.cloud. SendOauth2D-invoke.php is one such file, but remember that SendOauth2D-invoke must be sited in the parent of the /vendor folder.   
+
+
+So the redirect URI looks something like:
+https://mydomain.com/php/SendOauth2D-invoke.php
+
+To select security group 1, it merely needs to contain:
+```php
+namespace decomplexity\SendOauth2;
+session_start(); 
+require 'vendor/autoload.php';
+
+new SendOauth2D ('1');
+
+```
+
+
+## 7. SendOauth2A INSTANTIATION: ##
 ```php
 SendOauth2A has two arguments:
 $mailStatus
@@ -238,22 +257,4 @@ else
 {
 echo ("Sending failed. Error message: ". $mailStatus); 
 }
-```
-
-
-## *7. SendOauth2D INSTANTIATION: ##
-The code you use to instantiate SendOauth2D **MUST** have **EXACTLY** the same URI as the redirect URI you specify to Microsoft AAD or Google console.cloud. SendOauth2D-invoke.php is one such file, but remember that SendOauth2D-invoke must be sited in the parent of the /vendor folder.   
-
-
-So the redirect URI looks something like:
-https://mydomain.com/php/SendOauth2D-invoke.php
-
-To select security group 1, it merely needs to contain:
-```php
-namespace decomplexity\SendOauth2;
-session_start(); 
-require 'vendor/autoload.php';
-
-new SendOauth2D ('1');
-
 ```
