@@ -23,7 +23,33 @@ plus a few extra 'admin' lines of PHP.
 SendOauth2's aim is to simplify the implementation of Oauth2 authentication and authorisation that, particularly for Microsoft, is considerably more complex than Basic Authentication, although SendOauth2 also supports Basic Authentication in order to make transition to OAuth2 easier.      
 
 
-## 1. CLASSES and FILES ##
+
+ 
+
+## 1. INSTALLATION ##
+Use Composer to get the latest stable versions of SendOauth2, PHPMailer, thenetworg's Microsoft provider and PHP League oauth2-google provider
+
+**NB: one code change is currently needed to the Microsoft provider thenetworg oauth2-azure Azure.php
+This cannot be done as an override:
+- for release 2.0.1, at line 214, replace * *graph.windows.net* * by * *graph.microsoft.com* * ** 
+
+Composer will install SendOauth2, PHPMailer and the providers in your site's vendor/decomplexity/sendoauth2/src folder; merely specify in your json: 
+{
+    "require": {
+        "decomplexity/SendOauth2": ">=1.0.5"
+}
+}
+
+
+
+
+## 2. PROVIDERS: ##
+The Gmail provider is the PHP League * *oauth2-google* *  written by Woody Gilk and others.
+The Microsoft  provider is thenetworg * *oauth2-azure* * written by Jan Hajek and others.
+
+
+
+## 3. CLASSES and FILES ##
 SendOauth2 consists of four PHP classes held in PHP files of those names, stored by default in the vendor/decomplexity/sendoauth2/src folder.
 
 There are three further files that are distributed in the Examples folder and should be moved to /vendor's parent folder for modification by the developer. One file (SendOauth2D-settings) is a template for authenticating to four email services: Microsoft 365 OAuth2, Microsoft 365 Basic Authentication (userid and password), Google Gmail OAuth2 and Google Gmail Basic Authentication. This file is in the form of a PHP 'switch' block with four 'cases' and is required by class SendOauth2D. The other two files (SendOauth2A-invoke and SendOauth2D-invoke) are templates for instantiating SendOauth2A (which 'sends mail') and SendOauthD (which acquires OAuth2 refresh tokens). The sample code in SendOauth2A-invoke is intended to be edited and incorporated into the developer's website pages.      
@@ -62,33 +88,11 @@ ClientId, clientSecret, redirectURI and refreshToken thus only need to be copied
 
 
 
-## 2. SERVICE SETTINGS: ##
+## 4. SERVICE SETTINGS: ##
 For Microsoft AAD client setup , it appears unnecessary to add 'offline_access' and 'SMTP.Send' Graph permissions as long as SendOauth2D authenticates with a logon using the user principal name (email address). This may be a result of Microsoft implementing Exchange (outlook.office.com) as the resource API for OAuth2 authenticated SMTP Send but not Graph (although Exchange does not itself now have a SMTP.Send permission to use!)
 If SendOauth2D authenticates with a logon from another email account in the same tenant, it IS necessary to add these as Graph permissions and 'grant Admin consent' for the tenant.
 
 Google is simpler, but it is worth ensuring that when adding permissions via the OAuth consent screen that the Gmail API has been enabled (or you won’t be able to find 'mail.google.com' in order to select it).
-
-
-
-## 3. PROVIDERS: ##
-The Gmail provider is the PHP League * *oauth2-google* *  written by Woody Gilk and others.
-The Microsoft  provider is thenetworg * *oauth2-azure* * written by Jan Hajek and others.
-
- 
-
-## 4. INSTALLATION ##
-Use Composer to get the latest stable versions of SendOauth2, PHPMailer, thenetworg's Microsoft provider and PHP League oauth2-google provider
-
-**NB: one code change is currently needed to the Microsoft provider thenetworg oauth2-azure Azure.php
-This cannot be done as an override:
-- for release 2.0.1, at line 214, replace * *graph.windows.net* * by * *graph.microsoft.com* * ** 
-
-Composer will install SendOauth2, PHPMailer and the providers in your site's vendor/decomplexity/sendoauth2/src folder; merely specify in your json: 
-{
-    "require": {
-        "decomplexity/SendOauth2": ">=1.0.5"
-}
-}
 
 
 
@@ -102,7 +106,8 @@ Both of these can be overridden when SendOauth2A is invoked.
 
 
 
-## *6. SendOauth2D INSTANTIATION: ##
+
+## 6. SendOauth2D INSTANTIATION: ##
 The code you use to instantiate SendOauth2D **MUST** have **EXACTLY** the same URI as the redirect URI you specify to Microsoft AAD or Google console.cloud. SendOauth2D-invoke.php is one such file, but remember that SendOauth2D-invoke must be sited in the parent of the /vendor folder.   
 
 
