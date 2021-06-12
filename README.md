@@ -5,7 +5,8 @@ SendOauth2 supports both OAuth2 and Basic authentication for both Microsoft and 
 Microsoft support is primarily for Microsoft 365 accounts using Graph V1 with the V2 authentication and authorization endpoints.
 Google support is for any Gmail.
   
-*Why wrap?* Non-trivial websites typically use email at many points (Contact pages, purchase confirmations, PayPal IPNs and so on), and incorporating PHPMailer invocation code and mail settings in each such page is a pain for maintenance, especially if OAuth2 is set up to use a different Client Secret (and possibly even a different Client ID) for each point  - which is the more secure approach.
+*Why wrap?* Non-trivial websites typically use email at many points (Contact pages, purchase confirmations, PayPal IPNs and so on), and incorporating PHPMailer invocation code and mail settings in each such page makes maintenance unwieldy, especially if OAuth2 is set up to use a different Client Secret (and possibly even a different Client ID) for each point  - which is the more secure approach. 
+Furthermore, refresh tokens have a maximum life of 90 days before the issuer must re-authorize to get a new one unless in the meantime he or she had authorised to extend the life of an existing one (the '90 days' is the *maximum inactive time*). The alternative is to ask also for a new refresh token each time an access token is issued.     
 
 Using the SendOauth2 wrapper, a page can contain as little as:  
 
@@ -116,8 +117,7 @@ https://mydomain.com/php/SendOauth2D-invoke.php
 
 To select security group 1, it merely needs to contain:
 ```php
-namespace decomplexity\SendOauth2;
-session_start(); 
+namespace decomplexity\SendOauth2; 
 require 'vendor/autoload.php';
 
 new SendOauth2D ('1');
