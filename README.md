@@ -6,7 +6,7 @@ Microsoft support is primarily for Microsoft 365 accounts using Graph V1 with th
 Google support is for any Gmail.
   
 *Why wrap?* Non-trivial websites typically use email at many points (Contact pages, purchase confirmations, PayPal IPNs and so on), and incorporating PHPMailer invocation code and mail settings in each such page makes maintenance unwieldy, especially if OAuth2 is set up to use a different Client Secret (and possibly even a different Client ID) for each point  - which is the more secure approach. 
-Furthermore, refresh tokens have a maximum life of 90 days before the issuer must re-authorize to get a new one unless in the meantime he or she had authorised to extend the life of an existing one (the '90 days' is the *maximum inactive time*). The alternative is to ask also for a new refresh token each time an access token is issued.     
+Furthermore, refresh tokens have a maximum life of 90 days before the issuer must re-authorize to get a new one unless in the meantime he or she had authorised to extend the life of an existing one (the '90 days' is the *maximum inactive time*). The alternative is to ask for a new refresh token each time an access token is issued. Client secrets have a maximum life of 2 years, and client certificates are believed to have  2-year life also although MSFT's documentation is unclear.        
 
 Using the SendOauth2 wrapper, a page can contain as little as:  
 
