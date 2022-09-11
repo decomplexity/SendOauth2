@@ -19,7 +19,7 @@ However, Microsoft's implementation of SMTP OAuth2 with permissions specified in
 
 ## MSFT's SMTP OAuth2  implementation ## 
 Microsoft Oauth2 client scope with a URI of https://outlook.office.com (needed for SMTP AUTH or IMAP, for example) can be specified in a corresponding AAD permission but outlook.office.com is not listed in the resource API list!
-Microsofts pushes Graph (which does have e.g. an SMTP AUTH permission), but have confirmed that SMTP AUTH is implemented only in the outlook resource API. 
+Microsofts pushes Graph (which does have e.g. an SMTP AUTH permission), but have confirmed that SMTP AUTH is implemented in the outlook resource API. 
 
 Testing confirms this: if the client uses a scope of  https://graph.Microsoft.com/SMTP.Send and an AAD Microsoft Graph permission of SMTP.Send, authentication fails. The acid test lies in the ‘aud’ claim in the Access token: if it is “00000003-0000-0000-c000-000000000000” (aka Graph) authentication fails whereas an ‘aud’ of https://outlook.office.com will succeed (other things being equal).
 One would have thought naively that the client scopes and AAD permissions resource API should have the same URI, because it isn’t obvious how granular permissions – where the AAD permissions are a superset of the client’s scopes and clients ask for the minimum they need at the time they need it – can work if the superset cannot be specified in AAD!
@@ -29,7 +29,7 @@ But if the client scope also contains a Graph scope such as Mail.Send, ‘aud’
 These are using the V2 authorisation and token endpoints – as recommended by Microsoft.
 
 **To recap** : there isn’t an SMTP.Send listed under Exchange (API permissions => + Add a permission => Request API permissions /Microsoft APIs => Exchange or under Office 365 Exchange Online (API permissions => + Add a permission => Request API permissions / APIs my organization uses => Office 365 Exchange Online) . They are only listed under Graph. This leads to the weird situations that:
-- if a client uses (e.g.) SMTP.Send (or https://graph.Microsoft.com/SMTP.Send) scope, authentication fails even though Microsoft instructs that the corresponding permission must be registered in Graph
+- if a client uses (e.g.) SMTP.Send (or https://graph.microsoft.com/SMTP.Send) scope, authentication fails even though Microsoft instructs that the corresponding permission must be registered in Graph
 - if a client uses (e.g.) https://outlook.office.com/SMTP.Send scope (again as instructed by Microsoft), the client cannot add further https://outlook.office.com permissions (because the resource API is not listed) or use additional Graph scopes (because authentication fails and it would appear to be asking for one token to cover two APIs anyway)
 - the Outlook REST API (version 2) endpoint will be decomissioned in November 2022, but the related scopes such as https://outlook.office.com/SMTP.Send will continue to work. In OAuth terms, scopes are part of the authorisation process and used by the authorization endpoint to create an authorization code that is then exchanged for an access token. Direct access (read / write etc) to the resource server API is different, although since the resource server should check that the scopes in an access token are acceptable, this still doesn't explain how a different resource server API (i.e. not Outlook REST) should cope with them.
    
