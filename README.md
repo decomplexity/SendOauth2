@@ -1,12 +1,16 @@
 # **SendOauth2** #
 A wrapper for PHPMailer SMTP
 
-SendOauth2 supports both OAuth2 and Basic authentication for both Microsoft and Google.
+SendOauth2 supports both OAuth2 and Basic authentication for both Microsoft 365 Exchange email and Google Gmail.
 Microsoft support is primarily for Microsoft 365 accounts using Graph V1 with the V2 authentication and authorization endpoints.
 Google support is for any Gmail.
+SendOauth2 provides automatic renewal of refresh tokens.  
+Both client secrets and certificates are supported.
+Authorization_code grant is the only grant supported by Microsoft for SMTP, but they are currently (March 2023) developing client_credentials (i.e. application) grant for SMTP that is a more appropriate solution for daemon applications such PHPMailer than authorization_code (i.e. user) grant. SendOauth2 includes support for client_credentials grant but, when Microsoft make this available, an update to PHPMailer's Oauth.php module will also be needed.
+
   
-*Why wrap?* Non-trivial websites typically use email at many points (Contact pages, purchase confirmations, PayPal IPNs and so on), and incorporating PHPMailer invocation code and mail settings in each such page makes maintenance unwieldy, especially if OAuth2 is set up to use a different Client Secret (and possibly even a different Client ID) for each point  - which is the more secure approach. 
-Furthermore, refresh tokens have a maximum life of 90 days before the issuer must re-authorize to get a new one unless in the meantime he or she had authorised to extend the life of an existing one (the '90 days' is the *maximum inactive time*). The alternative is to ask for a new refresh token each time an access token is issued. Client secrets have a maximum life of 2 years, and client certificates are believed to have  2-year life also although MSFT's documentation is unclear.        
+*Why wrap?* Non-trivial websites typically use email at many points (Contact pages, purchase confirmations, PayPal IPNs and so on), and incorporating PHPMailer invocation code and mail settings in each such page makes maintenance unwieldy, especially if OAuth2 is set up to use a different Client Secret for each point  - which is the more secure approach. 
+Furthermore, refresh tokens have a maximum life of 90 days before the issuer must re-authorize to get a new one unless in the meantime he or she had authorised to extend the life of an existing one (the '90 days' is the *maximum inactive time*). The alternative is to ask also for a new refresh token each time an access token is issued.     
 
 Using the SendOauth2 wrapper, a page can contain as little as:  
 
@@ -28,20 +32,40 @@ SendOauth2's aim is to simplify the implementation of Oauth2 authentication and 
  
 
 ## 1. INSTALLATION ##
-Use Composer to get the latest stable versions of SendOauth2, PHPMailer, thenetworg's Microsoft provider and PHP League oauth2-google provider
-
-**NB: one code change is currently needed to the Microsoft provider thenetworg oauth2-azure Azure.php
-This cannot be done as an override:
-- for release 2.0.1, at line 214, replace * *graph.windows.net* * by * *graph.microsoft.com* * ** 
+Use Composer to get the latest stable versions of SendOauth2, PHPMailer, thenetworg's Microsoft provider, the PHP League's oauth2-google and oauth2-client [MSFT] providers and so forth. Composer will do all this for you.
 
 Composer will install SendOauth2, PHPMailer and the providers in your site's vendor/decomplexity/sendoauth2/src folder; merely specify in your json: 
+
+```
 {
     "require": {
-        "decomplexity/SendOauth2": ">=1.0.5"
+        "decomplexity/SendOauth2": ">=2.0"
 }
 }
+```
+
+TWO CODE CHANGES ARE CURRENTLY (March 2023) NEEDED:
+
+**NB(1): one code change is currently needed to the Microsoft provider thenetworg oauth2-azure Azure.php
+This cannot be done as an override:
+- for release 2.0.1, at line 214, replace  *graph.windows.net*  by  *graph.microsoft.com*  ** 
+Any later versions of Azure may well have this already amended, as Azure AD Graph is deprecated by Microsoft and replaced by Microsoft Graph. 
 
 
+
+**NB(2): a one-line code addition is needed to TheLeague oauth2-client/src/Token/AccessToken.php if you wish to have refresh tokens updated automatically. The wrapper checks for this change; if it is not present, the wrapper will default to letting refresh tokens expire in the normal way.
+The existing code from around line 107 (exact line is version dependent) reads:
+
+```
+        if (!empty($options['refresh_token'])) {
+            $this->refreshToken = $options['refresh_token'];
+```
+
+Then add the line:
+
+```
+  	        $_SESSION[__NAMESPACE__ . "\\updatedRefreshToken"] =  $this->refreshToken; 
+```
 
 
 ## 2. PROVIDERS: ##
@@ -53,7 +77,7 @@ The Microsoft  provider is thenetworg * *oauth2-azure* * written by Jan Hajek an
 ## 3. CLASSES and FILES ##
 SendOauth2 consists of four PHP classes held in PHP files of those names, stored by default in the vendor/decomplexity/sendoauth2/src folder.
 
-There are three further files that are distributed in the Examples folder and should be moved to /vendor's parent folder for modification by the developer. One file (SendOauth2D-settings) is a template for authenticating to four email services: Microsoft 365 OAuth2, Microsoft 365 Basic Authentication (userid and password), Google Gmail OAuth2 and Google Gmail Basic Authentication. This file is in the form of a PHP 'switch' block with four 'cases' and is required by class SendOauth2D. The other two files (SendOauth2A-invoke and SendOauth2D-invoke) are templates for instantiating SendOauth2A (which 'sends mail') and SendOauthD (which acquires OAuth2 refresh tokens). The sample code in SendOauth2A-invoke is intended to be edited and incorporated into the developer's website pages.      
+There are three further files that are distributed in the Examples folder and should be moved to /vendor's parent folder for modification by the developer. One file (SendOauth2D-settings) is a template for authenticating to four email services: Microsoft 365 OAuth2, Microsoft 365 Basic Authentication (userid and password), Google Gmail OAuth2 and Google Gmail Basic Authentication. This file is in the form of a PHP 'switch' block with four 'cases' and is required by class SendOauth2D. The other two files (SendOauth2A-invoke and SendOauth2D-invoke) are templates for instantiating SendOauth2A (which 'sends mail') and SendOauthD (which, for authorization_code grant, acquires OAuth2 refresh tokens). The sample code in SendOauth2A-invoke is intended to be edited and incorporated into the developer's website pages.      
 
 
 <p align=center>
@@ -62,7 +86,7 @@ There are three further files that are distributed in the Examples folder and sh
 
 **FLOW SUMMARY**
 
-Microsoft and Google OAauth2 settings => paste => SendOauth2D
+Microsoft and Google OAauth2 settings => paste => SendOauth2D-settings
 
 Invoke SendOauth2D  <=> SendOauth2C (provider factory)
 
@@ -90,8 +114,7 @@ ClientId, clientSecret, redirectURI and refreshToken thus only need to be copied
 
 
 ## 4. SERVICE SETTINGS: ##
-For Microsoft AAD client setup , it appears unnecessary to add 'offline_access' and 'SMTP.Send' Graph permissions as long as SendOauth2D authenticates with a logon using the user principal name (email address). This may be a result of Microsoft implementing Exchange (outlook.office.com) as the resource API for OAuth2 authenticated SMTP Send but not Graph (although Exchange does not itself now have a SMTP.Send permission to use!)
-If SendOauth2D authenticates with a logon from another email account in the same tenant, it IS necessary to add these as Graph permissions and 'grant Admin consent' for the tenant.
+For Microsoft AAD client setup , it appears unnecessary to add 'offline_access' and 'SMTP.Send' Graph permissions as long as SendOauth2D authenticates with a logon using the user principal name (email address) because Graph will add them automatically. This is the result of Microsoft implementing Exchange (outlook.office.com) as the resource API for OAuth2 authenticated SMTP Send but not Graph (although Exchange does not itself now have a SMTP.Send permission to use!). If SendOauth2D authenticates with a logon from another email account in the same tenant, it may be necessary to add these as Graph permissions and 'grant Admin consent' for the tenant. MSFT scope permissions are quirky; they are explained in great detail in PHPMailer's WiKi document 'Microsoft OAuth2 SMTP issues' 
 
 Google is simpler, but it is worth ensuring that when adding permissions via the OAuth consent screen that the Gmail API has been enabled (or you won’t be able to find 'mail.google.com' in order to select it).
 
@@ -138,11 +161,10 @@ new SendOauth2A ($mailStatus,$options)
 It is preceded by:
 
 namespace decomplexity\SendOauth2;
-session_start();
 require 'vendor/autoload.php';
 
 
-and followed by clearing thw session variables and then your test for success or failure ($mailStatus returns "OK" for a successful send):
+and followed by clearing the session variables and then your test for success or failure ($mailStatus returns "OK" for a successful send):
 $_SESSION = array(); 
 if ($mailStatus == "OK") {
 echo ("Email sent OK");
