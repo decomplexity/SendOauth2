@@ -11,17 +11,9 @@
        */
 
 
-       namespace decomplexity\SendOauth2;
- 
-  /**  if autoload fails to load the class-files needed, load them with:  
-  
-      require_once 'vendor/phpmailer/phpmailer/src/PHPMailer.php';
-      require_once 'vendor/phpmailer/phpmailer/src/Exception.php';
-      require_once 'vendor/decomplexity/sendoauth2/src/SendOauth2B.php';
-   */
+      namespace decomplexity\SendOauth2;
 
       use PHPMailer\PHPMailer\PHPMailer;
-      use PHPMailer\PHPMailer\Exception;
 
     /**
      * SendOauth2A Wrapper for Microsoft and Google OIDC/OAUTH2 For PHPMailer
@@ -102,7 +94,7 @@ class SendOauth2A
      * and the 'From' name and address.
      * At least one of the To, CC or BCC fields must have an address, as must the
      * From field. 'Name' is optional.
-     * The ReplyTo field is optional and will default to the Fron name and address
+     * The ReplyTo field is optional and will default to the From name and address
      * The format of each entry is: address,name; address,name; address,name etc
      * 'From' must obviously contain only one name and address
      * @var string
@@ -240,21 +232,31 @@ class SendOauth2A
      */
     protected $email = '';
 
+    /** 
+     * XOAUTH2 or LOGIN - returned to this class. Don't want to refresh the refresh token for Basic Authentication! 
+     * 
+     * @var string
+     */ 
+    protected $authTypeSetting = '';
+
 
     /**
      * __construct Method Doc Comment
      * Sends the email!
      *
-     * @version  1.0
+     * @version  2.0
      * @see      https://github.com/PHPMailer/PHPMailer/ The PHPMailer GitHub project
      * @category Method
      * @author   Max Stewart
      */
     public function __construct(&$mailStatus, $options)
     {
-
-    /**
-     * note the call by reference for &$mailStatus so that success or faulure can be pass3ed back to global scope
+	  if (session_status() === PHP_SESSION_NONE) {
+       session_start();
+        }
+	
+	/**
+     * note the call by reference for &$mailStatus so that success or failure can be passed back to global scope
      */
 
     /**
@@ -322,7 +324,7 @@ class SendOauth2A
 
         $this->fromNameDefault = $this->oauth2_settings_array['fromNameDefault'];
         $this->mailSMTPAddress = $this->oauth2_settings_array['mailSMTPAddress'];
-
+		$this->authTypeSetting = $this->oauth2_settings_array['authTypeSetting'];
 
         $this->mail->isSMTP();                                      // Set mailer to use SMTP
         $this->mail->SMTPAuth = true;                               // Enable SMTP authentication
@@ -330,15 +332,14 @@ class SendOauth2A
         $this->mail->Port = 587;                                    // Set TLS port
         $this->mail->CharSet = PHPMailer::CHARSET_UTF8;             // unless you want iso-8859-1 or whatever
 
-        /**
-        * for diagnostics, uncomment:
-        $this->mail->SMTPDebug = SMTP::DEBUG_LOWLEVEL;
-        */
+        // for diagnostics, uncomment:
+	    //$this->mail->SMTPDebug = SMTP::DEBUG_LOWLEVEL;
+        //
 
 
         $this->assignValues([$this->mail,'addAddress'], $this->mailTo);
         $this->assignValues([$this->mail,'addCC'], $this->mailCC);
-        $this->assignValues([$this->mail,'aAddBCC'], $this->mailBCC);
+        $this->assignValues([$this->mail,'addBCC'], $this->mailBCC);
         $this->assignValues([$this->mail,'setFrom'], $this->mailFrom);
         $this->assignValues([$this->mail,'addReplyTo'], $this->mailReplyTo);
         $this->assignValues([$this->mail,'addAttachment'], $this->mailAttach);
@@ -435,6 +436,15 @@ class SendOauth2A
             $mailStatus = self::SEND_OK;
         }
 
+        /** 
+		* get a replacement refresh token 
+        */
+        if ($this->authTypeSetting == "XOAUTH2") {
+ 		    $this->SendOauth2B_obj->storeNewRefreshToken(); 
+		} 
+
+       $_SESSION = array();  // unset session variables
+
     /**
     * Ends __construct method
     */
@@ -453,7 +463,7 @@ class SendOauth2A
         return;
     }
 
-     /**
+    /**
      * @category Method
      * Some calling parameters are arrays. This method assigns an array argument
      * to an appropriate PHPMailer method. Note that methods of instantiated
@@ -462,15 +472,22 @@ class SendOauth2A
     protected function assignValues(array $method, array $from)
     {
         foreach ($from as $this->email) {
-            $valout = $this->parseArrayValue($this->email);
-            $method[0]->{$method[1]}($valout[0], $valout[1]);
-
+           $valout = $this->parseArrayValue($this->email);
+          if (empty($valout[1])) 
+            $method[0]->{$method[1]}($valout[0]);
+		  else 
+		  $method[0]->{$method[1]}($valout[0], $valout[1]);
     /**
      * PHP note: the passed method above needs to be enlosed in {} as above or the statement will be
      * interpreted as ($method[0]->$method)[1] when the function name will be treated as an array
      * and not a string!
-     */
-        }
+     * 
+	 * Also, PHPMailer methods such as addAddress that take one or two operands do not
+	 * like being given a second empty operand when we only want to provide one
+	 * operaand (e.g. an email address but not followed by a name). 
+	 */
+	 
+      }
     }
 
      /**
