@@ -24,7 +24,7 @@
     "require": {
         "php": ">=5.5.0",
         "phpmailer/phpmailer": ">=6.3.0",
-        "thenetworg/oauth2-azure": ">=2.0.1",
+        "thenetworg/oauth2-azure": ">=2.2.1",
         "league/oauth2-google": ">=4.0.0"
        },
     "autoload": {
