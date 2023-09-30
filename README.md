@@ -6,7 +6,7 @@ Microsoft support is primarily for Microsoft 365 accounts using Graph V1 with th
 Google support is for any Gmail.
 SendOauth2 provides automatic renewal of refresh tokens.  
 Both client secrets and certificates are supported.
-Authorization_code grant is the only grant supported by Microsoft for SMTP, but they are currently (March 2023) developing client_credentials (i.e. application) grant for SMTP that is a more appropriate solution for daemon applications such PHPMailer than authorization_code (i.e. user) grant. SendOauth2 includes support for client_credentials grant but, when Microsoft make this available, an update to PHPMailer's Oauth.php module will also be needed.
+Authorization_code grant is the grant originally supported by Microsoft for SMTP, but in July 2023 they released client_credentials (i.e. application) grant for SMTP. This is a more appropriate solution for daemon applications such PHPMailer than authorization_code (i.e. user) grant. SendOauth2 includes support for client_credentials grant, but an update to PHPMailer's Oauth.php module is also needed and is available from the present author. 
 
   
 *Why wrap?* Non-trivial websites typically use email at many points (Contact pages, purchase confirmations, PayPal IPNs and so on), and incorporating PHPMailer invocation code and mail settings in each such page makes maintenance unwieldy, especially if OAuth2 is set up to use a different Client Secret for each point  - which is the more secure approach. 
