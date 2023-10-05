@@ -32,7 +32,7 @@ This leads to the bizarre situation that a scope permission of SMTP.Send is inva
 
 
 5. The foregoing findings refer to authorization_code grant type flows. Dedicated mail-out ‘demon’ applications such as PHPMailer that are frequently used with delegated permissions from User Principal and do not need the end-user to log in would run more efficiently with client_credentials grant as no refresh token or scope permissions are used: scope permissions default to the AAD registration permissions. 
-Authorization_code flow support for IMAP, POP and SMTP has been available since April 2020. Client_credentials support for IMAP and POP was announced in August 2022 but SMTP was a notable absentee. Whether this absence is to pre-empt a possible open-relay security exposure is unclear. 
+Authorization_code flow support for IMAP, POP and SMTP has been available since April 2020. Client_credentials support for IMAP and POP was announced in August 2022 but SMTP was a notable absentee, and SMTP support was only announced in July 2023.
 
 
 6. A final and common reason for SMTP failing at authorization with ‘535 5.7.3 Authentication unsuccessful’ is the email account itself simply not having SMTP AUTH allowed in EXO Admin Center => Active Users => select user => Mail tab => Manage email apps
