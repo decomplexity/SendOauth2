@@ -14,6 +14,8 @@
       namespace decomplexity\SendOauth2;
 
       use PHPMailer\PHPMailer\PHPMailer;
+	  use PHPMailer\PHPMailer\SMTP;
+
 
     /**
      * SendOauth2A Wrapper for Microsoft and Google OIDC/OAUTH2 For PHPMailer
@@ -333,7 +335,7 @@ class SendOauth2A
         $this->mail->CharSet = PHPMailer::CHARSET_UTF8;             // unless you want iso-8859-1 or whatever
 
         // for diagnostics, uncomment:
-	    //$this->mail->SMTPDebug = SMTP::DEBUG_LOWLEVEL;
+	    // $this->mail->SMTPDebug = SMTP::DEBUG_LOWLEVEL;
         //
 
 
@@ -349,31 +351,31 @@ class SendOauth2A
 
 
      /**
-     * Some Contact forms for example may not have a 'from; name
-     * or a 'from' address or (a bit pointless...) even neither.
-     * Try to do something sensible in most contexts where various combinations
-     * of fromName, fromAddress and replyTo are set or not.
-     * Finally, if fromAddress is blank, Reply-T0 addresss is set to do-not-reply@senderdomain
+      * Some Contact forms for example may not have a 'from; name
+      * or a 'from' address or (a bit pointless...) even neither.
+      * Try to do something sensible in most contexts where various combinations
+      * of fromName, fromAddress and replyTo are set or not.
+      * Finally, if fromAddress is blank, Reply-T0 addresss is set to do-not-reply@senderdomain
        ..... this prevents fromName prefixing a do-not-reply address in a reply
       */
 
      /** first, split 'mailFrom'
-     * note that mailFrom is an array but parseArrayValue needs a string argument
-     */
+      * note that mailFrom is an array but parseArrayValue needs a string argument
+      */
         $fromarray = $this->parseArrayValue(strval($this->mailFrom[0]));
         $this->fromAddress = $fromarray[0];
         $this->fromName  = $fromarray[1];
 
-        /**
-        * Note: mail->From is an email ADDRESS
-        * Both MSFT and Google want outgoing smail to be from their own email addresses
-        * to satisfy SPF and DKIM
-        * Any Contact form 'From' must be sent in the text.
-        *
-        * Note also that PHPMailer property $Sender is not settable by callers
-        * either in global or in SendOauth2D
-        * It is the 'envelope' address and used as a bounce address
-        */
+      /**
+       * Note: mail->From is an email ADDRESS
+       * Both MSFT and Google want outgoing smail to be from their own email addresses
+       * to satisfy SPF and DKIM
+       * Any Contact form 'From' must be sent in the text.
+       *
+       * Note also that PHPMailer property $Sender is not settable by callers
+       * either in global or in SendOauth2D
+       * It is the 'envelope' address and used as a bounce address
+       */
         $this->mail->From = $this->mailSMTPAddress;
 
 
@@ -406,8 +408,8 @@ class SendOauth2A
 
 
      /**
-     * Send HTML or Plain Text email (normally leave as HTML)
-     */
+      * Send HTML or Plain Text email (normally leave as HTML)
+      */
 
         $this->mail->isHTML(true);
         $this->mail->Subject = $this->mailSubject;
@@ -420,13 +422,13 @@ class SendOauth2A
             $this->mail->AltBody = $this->mailTextPlain;
         } else {
 
-        /**
+       /**
         * if the following fails, use strip_tags() instead!
         */
            $this->mail->AltBody = $this->mail->html2text($this->mailText);
         }
 
-        /**
+       /**
         NOW SEND!!
         */
 
@@ -436,7 +438,7 @@ class SendOauth2A
             $mailStatus = self::SEND_OK;
         }
 
-        /** 
+       /** 
 		* get a replacement refresh token 
         */
         if ($this->authTypeSetting == "XOAUTH2") {
@@ -446,11 +448,11 @@ class SendOauth2A
        $_SESSION = array();  // unset session variables
 
     /**
-    * Ends __construct method
-    */
+     * Ends __construct method
+     */
     }
 
-     /**
+    /**
      * @category Method
      * Ensure each each expected array key exists
      * If not, create it and assign a null value to the property
@@ -490,7 +492,7 @@ class SendOauth2A
       }
     }
 
-     /**
+    /**
      * @category Method
      * This method splits the input argument and assigns each part to
      * two array elements returned
