@@ -45,12 +45,12 @@ class SendOauth2C
     protected $serviceProvider = "";
 
 
-     /**
+    /**
      * authentication type: either CRAM-MD5, LOGIN, PLAIN or XOAUTH2
      */
     protected $authTypeSetting = "";
 
-    /**
+   /**
     * two parameters which indicate whether or not to generate a refresh token
     * boolean 'refresh' is sent from SendOauthD and SendOauth2B
     * It is decoded into accessPrompt (see below) and accessType (set from SendOauthD
@@ -66,13 +66,13 @@ class SendOauth2C
     protected $accessPrompt = "";
 
 
-     /**
+    /**
      * Instantiation of Oauth2 provider
      * @var string
      */
     public $provider;
 
-     /**
+    /**
      * scopeAuth is passed to SendOauthD via method getScope
      * for use with getAuthorizationUrl
      * Google will not register the scope request at console.cloud.google.com
@@ -91,7 +91,7 @@ class SendOauth2C
      */
     protected $mail = "";
 
-     /**
+    /**
      * SMTP server domain name
      */
     protected $SMTPserver = "";
@@ -100,7 +100,8 @@ class SendOauth2C
     /**
 	 * usual OAuth2 app registration details
      */
-    protected $clientId;
+	protected $tenant;    
+	protected $clientId;
     protected $clientSecret;
     protected $clientCertificatePrivateKey;
     protected $clientCertificateThumbprint;
@@ -138,21 +139,22 @@ class SendOauth2C
                 session_start();
                 }
 
+        $this->tenant = $optionsC['tenant'];
         $this->clientId = $optionsC['clientId'];
         $this->clientSecret = $optionsC['clientSecret'];
-	$this->clientCertificatePrivateKey = $optionsC['clientCertificatePrivateKey'];
+	    $this->clientCertificatePrivateKey = $optionsC['clientCertificatePrivateKey'];
         $this->clientCertificateThumbprint = $optionsC['clientCertificateThumbprint']; 
         $this->redirectURI = $optionsC['redirectURI'];
         $this->serviceProvider = $optionsC['serviceProvider'];
         $this->authTypeSetting = $optionsC['authTypeSetting'];
-	$this->hostedDomain = $optionsC['hostedDomain'];
-	$this->refresh = $optionsC['refresh'];
+	    $this->hostedDomain = $optionsC['hostedDomain'];
+	    $this->refresh = $optionsC['refresh'];
         $this->grantTypeValue = $optionsC['grantTypeValue'];
 
-       /**
-	* authorisation_code grant needs consent value of 'consent'
-	* client_credentials grant needs consent value of 'admin_consent'
-        */
+    /**
+	 * authorisation_code grant needs consent value of 'consent'
+	 * client_credentials grant needs consent value of 'admin_consent'
+     */
 
         $consentType = ($this->grantTypeValue == 'authorization_code') ? 'consent' : 'admin_consent';
 
@@ -170,7 +172,7 @@ class SendOauth2C
 
      /**
       * ends scope parasmeter switch
-     */
+      */
         }
 
         switch ($this->serviceProvider) {
@@ -191,8 +193,8 @@ class SendOauth2C
                     [
                     'clientId'                    => $this->clientId,
                     'clientSecret'                => $this->clientSecret,
-		    'clientCertificatePrivateKey' => $this->clientCertificatePrivateKey, 
-		    'clientCertificateThumbprint' => $this->clientCertificateThumbprint,
+		            'clientCertificatePrivateKey' => $this->clientCertificatePrivateKey, 
+		            'clientCertificateThumbprint' => $this->clientCertificateThumbprint,
                     'redirectUri'                 => $this->redirectURI,
                     'accessType'                  =>  $this->accessType,
                     'prompt'                      =>   $this->accessPrompt,
@@ -207,74 +209,86 @@ class SendOauth2C
 
                 $this->provider->urlAPI = "https://graph.microsoft.com/";
                 $this->provider->API_VERSION = '1.0';
+				
  				
-              /**
-                 * NB  NB  NB  NB  NB  NB !
-                 * One change may be needed to provider's oauth2-azure-2.0.0 Azure.php
-		 * (and perhaps later releases) that cannot be done as an override:
-                 * At circa line 210, replace graph.windows.net by graph.microsoft.com
-		 * Depending on the version of TheNetworg provider you are using,
-		 * both overrides may already be in the code
-                 */
+             /**
+              * NB  NB  NB  NB  NB  NB !
+              * One change may be needed to provider's oauth2-azure-2.0.0 Azure.php
+		      * (and perhaps later releases) that cannot be done as an override:
+              * At circa line 210, replace graph.windows.net by graph.microsoft.com
+		      * Depending on the version of TheNetworg provider you are using,
+		      * both overrides may already be in the code
+              */
 
-              /**
-                * XXXXX  This scope MUST NOT currently  contain any Graph-specific scopes  XXXXXX
-                * else AAD will use Graph as 'aud' claim (resource endpoint) and not outlook.office.com.
-		* MSFT 'scope' is quirky and the order of operands is significant
-		* See the WiKi document on GitHub in this repo or in PHPMailer repo entitled
-		* "Microsoft OAuth2 SMTP issues"  
-                */
+             /**
+              * NB NB  This scope MUST NOT currently  contain any Graph-specific scopes  NB NB
+              * else AAD will use Graph as 'aud' claim (resource endpoint) and not outlook.office.com.
+		      * MSFT 'scope' is quirky and the order of operands is significant
+		      * See the WiKi document on GitHub in this repo or in PHPMailer repo entitled
+		      * "Microsoft OAuth2 SMTP issues"  
+              */
 
-               /**
-                * grantTypeValue is assumed valid as it is verified in SendOauth2D
-                */
+             /**
+              * grantTypeValue is assumed valid as it is verified in SendOauth2D
+			  * tenant is needed for client_credentials grant since a specific tenant GUID or domain name must be given;
+			  * 'common' or 'organizations' or 'consumers' are not valid for client_credentials flow since
+			  * a user does not log on with CCF
+              */
 			    				
-		if ($this->grantTypeValue == 'authorization_code') {
-		$this->scopeAuth = 'offline_access https://outlook.office.com/SMTP.Send';
-		}
-		else
-		{
-		$this->scopeAuth = 'https://outlook.office.com/.default';
-		} 
+		     /**
+              * scope is flow dependent, and since with CCF there is no user to log on and consent to scope operands,
+              * all permissions set for the app in the Azure portal (the 'default' permissions) are available 
+              */
+		
+				
+		     if ($this->grantTypeValue == 'authorization_code') {
+		     $this->scopeAuth = 'offline_access https://outlook.office.com/SMTP.Send';
+	     	 }
+		     else
+		     {
+		     $this->scopeAuth = 'https://outlook.office365.com/.default';
+		     $this->provider->tenant = $this->tenant;
+		     } 
               			  
-		break;
- 
+		     break;
+           /**
+            * ends MSFT switch case
+            */
 
-
-            case "Google":
+           
+		    case "Google":
                 $this->SMTPserver   = 'smtp.gmail.com'; // Google SMTP server
               /**
                * don't instantiate the Oauth2 provider unless the authType is XOAUTH2
                */
                if ($this->authTypeSetting != 'XOAUTH2') {
                     break;
-               }
-
-
-                $this->provider     = new Google([
+               }   
+			   
+		         $this->provider     = new Google([
                 'clientId'          => $this->clientId,
                 'clientSecret'      => $this->clientSecret,
                 'redirectUri'       => $this->redirectURI,
-		'hostedDomain'      => $this->hostedDomain,
+		        'hostedDomain'      => $this->hostedDomain,
                
-	       /**
+	           /**
                 * note that adding:
                 *'scope'  =>  'https://mail.google.com/'
                 * here doesn't work - it needs to be in SendOauth2D's $options in
                 * $authUrl = $provider->getAuthorizationUrl($options);
                 * which is set from $this->scopeAuth below
-		*/				               
+		        */				               
                 'accessType'      =>  $this->accessType,
                 'prompt'          =>  $this->accessPrompt
                 ]);
 
-            /**
-            * Google scope
-            */
-              $this->scopeAuth = 'https://mail.google.com/';
-           /**
-            * note that Google will bounce 'offline_access' as a scope
-            */
+               /**
+                * Google scope
+                */
+                $this->scopeAuth = 'https://mail.google.com/';
+               /**
+                * note that Google will bounce 'offline_access' as a scope
+                */
             break;
            /**
             * ends second switch
