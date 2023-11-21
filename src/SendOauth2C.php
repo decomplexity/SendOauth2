@@ -12,14 +12,13 @@
 
 namespace decomplexity\SendOauth2;
 
-/**  if autoload fails to load the class-files needed, load them with the following:   
+/**  if autoload fails to load the class-files needed, load them with the following:
 require_once 'vendor/thenetworg/oauth2-azure/src/Provider/Azure.php';
 require_once 'vendor/league/oauth2-google/src/Provider/Google.php';
 */
 
 use TheNetworg\OAuth2\Client\Provider\Azure;
 use League\OAuth2\Client\Provider\Google;
-
 
 /**
 
@@ -98,19 +97,19 @@ class SendOauth2C
 
 
     /**
-	 * usual OAuth2 app registration details
+     * usual OAuth2 app registration details
      */
-	protected $tenant;    
-	protected $clientId;
+    protected $tenant;
+    protected $clientId;
     protected $clientSecret;
     protected $clientCertificatePrivateKey;
     protected $clientCertificateThumbprint;
     protected $redirectURI;
 
    /**
-	determines whether a refresh token is to be generated
-	*/
-    protected $refresh="";
+    determines whether a refresh token is to be generated
+    */
+    protected $refresh = "";
    
    
    /**
@@ -123,7 +122,7 @@ class SendOauth2C
     * Type of grant flow: e.g. authorization_code or client_credentials
     * @var string
     */
-    protected $grantTypeValue = "";
+    protected $grantType = "";
 
     /**
      * __construct Method Doc Comment
@@ -135,33 +134,34 @@ class SendOauth2C
     {
 
         // check to avoid a PHP 'Notice' message, specially as module is re-entrant
-		if (session_status() === PHP_SESSION_NONE) {
-                session_start();
-                }
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
 
         $this->tenant = $optionsC['tenant'];
         $this->clientId = $optionsC['clientId'];
         $this->clientSecret = $optionsC['clientSecret'];
-	    $this->clientCertificatePrivateKey = $optionsC['clientCertificatePrivateKey'];
-        $this->clientCertificateThumbprint = $optionsC['clientCertificateThumbprint']; 
+        $this->clientCertificatePrivateKey = $optionsC['clientCertificatePrivateKey'];
+        $this->clientCertificateThumbprint = $optionsC['clientCertificateThumbprint'];
         $this->redirectURI = $optionsC['redirectURI'];
         $this->serviceProvider = $optionsC['serviceProvider'];
         $this->authTypeSetting = $optionsC['authTypeSetting'];
-	    $this->hostedDomain = $optionsC['hostedDomain'];
-	    $this->refresh = $optionsC['refresh'];
-        $this->grantTypeValue = $optionsC['grantTypeValue'];
+        $this->hostedDomain = $optionsC['hostedDomain'];
+        $this->refresh = $optionsC['refresh'];
+        $this->grantType = $optionsC['grantType'];
 
     /**
-	 * authorisation_code grant needs consent value of 'consent'
-	 * client_credentials grant needs consent value of 'admin_consent'
+     * authorisation_code grant needs consent value of 'consent'
+     * client_credentials grant needs consent value of 'admin_consent'
      */
 
-        $consentType = ($this->grantTypeValue == 'authorization_code') ? 'consent' : 'admin_consent';
+        $consentType = ($this->grantType == 'authorization_code') ? 'consent' : 'admin_consent';
 
         switch ($this->refresh) {
             case true:
                 $this->accessType = 'offline';
-                $this->accessPrompt = $consentType . 'select_account';
+//                $this->accessPrompt = $consentType . " " . 'select_account';
+                $this->accessPrompt = $consentType;
                 break;
 
             case false:
@@ -178,13 +178,13 @@ class SendOauth2C
         switch ($this->serviceProvider) {
             case "Microsoft":
             default:
-            $this->SMTPserver   = 'smtp.office365.com';
-             /**
-             * don't instantiate the Oauth2 provider unless the authType is XOAUTH2
-             */
-                 if ($this->authTypeSetting != 'XOAUTH2') {
-                 break;
-                 }
+                $this->SMTPserver   = 'smtp.office365.com';
+              /**
+               * don't instantiate the Oauth2 provider unless the authType is XOAUTH2
+               */
+                if ($this->authTypeSetting != 'XOAUTH2') {
+                    break;
+                }
 
              /**
               * Instantiate Jan Hajek's TheNetworg provider for MSFT
@@ -193,107 +193,112 @@ class SendOauth2C
                     [
                     'clientId'                    => $this->clientId,
                     'clientSecret'                => $this->clientSecret,
-		            'clientCertificatePrivateKey' => $this->clientCertificatePrivateKey, 
-		            'clientCertificateThumbprint' => $this->clientCertificateThumbprint,
+                    'clientCertificatePrivateKey' => $this->clientCertificatePrivateKey,
+                    'clientCertificateThumbprint' => $this->clientCertificateThumbprint,
                     'redirectUri'                 => $this->redirectURI,
                     'accessType'                  =>  $this->accessType,
                     'prompt'                      =>   $this->accessPrompt,
-                    'defaultEndPointVersion'      => '2.0', 
-					]
+                    'defaultEndPointVersion'      => '2.0',
+                    ]
                 );
 
 
              /**
-              * Azure provider overrides 
+              * Azure provider overrides
               */
 
                 $this->provider->urlAPI = "https://graph.microsoft.com/";
                 $this->provider->API_VERSION = '1.0';
-				
- 				
+                
+                 
              /**
               * NB  NB  NB  NB  NB  NB !
               * One change may be needed to provider's oauth2-azure-2.0.0 Azure.php
-		      * (and perhaps later releases) that cannot be done as an override:
+              * (and perhaps later releases) that cannot be done as an override:
               * At circa line 210, replace graph.windows.net by graph.microsoft.com
-		      * Depending on the version of TheNetworg provider you are using,
-		      * both overrides may already be in the code
+              * Depending on the version of TheNetworg provider you are using,
+              * both overrides may already be in the code
               */
 
              /**
               * NB NB  This scope MUST NOT currently  contain any Graph-specific scopes  NB NB
               * else AAD will use Graph as 'aud' claim (resource endpoint) and not outlook.office.com.
-		      * MSFT 'scope' is quirky and the order of operands is significant
-		      * See the WiKi document on GitHub in this repo or in PHPMailer repo entitled
-		      * "Microsoft OAuth2 SMTP issues"  
+              * MSFT 'scope' is quirky and the order of operands is significant
+              * See the WiKi document on GitHub in this repo or in PHPMailer repo entitled
+              * "Microsoft OAuth2 SMTP issues"
               */
 
              /**
-              * grantTypeValue is assumed valid as it is verified in SendOauth2D
-			  * tenant is needed for client_credentials grant since a specific tenant GUID or domain name must be given;
-			  * 'common' or 'organizations' or 'consumers' are not valid for client_credentials flow since
-			  * a user does not log on with CCF
+              * grantType is assumed valid as it is verified in SendOauth2D
+              * tenant is needed for client_credentials grant since a specific tenant GUID or domain name must be given;
+              * 'common' or 'organizations' or 'consumers' are not valid for client_credentials flow since
+              * a user does not log on with CCF
               */
-			    				
-		     /**
+                                
+             /**
               * scope is flow dependent, and since with CCF there is no user to log on and consent to scope operands,
-              * all permissions set for the app in the Azure portal (the 'default' permissions) are available 
+              * all permissions set for the app in the Azure portal (the 'default' permissions) are available
               */
-		
-				
-		     if ($this->grantTypeValue == 'authorization_code') {
-		     $this->scopeAuth = 'offline_access https://outlook.office.com/SMTP.Send';
-	     	 }
-		     else
-		     {
-		     $this->scopeAuth = 'https://outlook.office365.com/.default';
-		     $this->provider->tenant = $this->tenant;
-		     } 
-              			  
-		     break;
+        
+                
+                if ($this->grantType == 'authorization_code') {
+                    $this->scopeAuth = 'offline_access https://outlook.office.com/SMTP.Send';
+                } else {
+                    $this->scopeAuth = 'https://outlook.office365.com/.default';
+                    $this->provider->tenant = $this->tenant;
+                }
+                            
+                break;
            /**
             * ends MSFT switch case
             */
 
            
-		    case "Google":
+            case "Google":
                 $this->SMTPserver   = 'smtp.gmail.com'; // Google SMTP server
               /**
                * don't instantiate the Oauth2 provider unless the authType is XOAUTH2
                */
-               if ($this->authTypeSetting != 'XOAUTH2') {
+                if ($this->authTypeSetting != 'XOAUTH2') {
                     break;
-               }   
-			   
-		         $this->provider     = new Google([
-                'clientId'          => $this->clientId,
-                'clientSecret'      => $this->clientSecret,
-                'redirectUri'       => $this->redirectURI,
-		        'hostedDomain'      => $this->hostedDomain,
+                }
                
-	           /**
+                 $this->provider = new Google([
+                'clientId'                    => $this->clientId,
+                'clientSecret'                => $this->clientSecret,
+                'clientCertificatePrivateKey' => $this->clientCertificatePrivateKey,
+                'clientCertificateThumbprint' => $this->clientCertificateThumbprint,
+                'redirectUri'                 => $this->redirectURI,
+                'hostedDomain'                => $this->hostedDomain,
+               
+               /**
                 * note that adding:
                 *'scope'  =>  'https://mail.google.com/'
                 * here doesn't work - it needs to be in SendOauth2D's $options in
                 * $authUrl = $provider->getAuthorizationUrl($options);
                 * which is set from $this->scopeAuth below
-		        */				               
+                */
                 'accessType'      =>  $this->accessType,
                 'prompt'          =>  $this->accessPrompt
-                ]);
+                 ]);
 
                /**
                 * Google scope
                 */
-                $this->scopeAuth = 'https://mail.google.com/';
+                
+                 $this->scopeAuth  = 'openid' . ' ';
+                 $this->scopeAuth .= 'https://mail.google.com' . ' ';
+                 $this->scopeAuth .= 'https://www.googleapis.com/auth/userinfo.email' . ' ';
+                 $this->scopeAuth .= 'https://www.googleapis.com/auth/userinfo.profile';
+
                /**
                 * note that Google will bounce 'offline_access' as a scope
                 */
-            break;
+                break;
            /**
             * ends second switch
             */
-            }
+        }
 
 
       /**
