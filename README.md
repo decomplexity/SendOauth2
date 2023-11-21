@@ -2,20 +2,31 @@
 A wrapper for PHPMailer SMTP
 
 SendOauth2 supports both OAuth2 and Basic authentication for both Microsoft 365 Exchange email and Google Gmail. 
-Yahoo (and hence AOL) support Oauth2 access tokens obtained via authorization_code grant flow (they do not support client_credentials grants) for using their SMTP gateway, but this is untested.
+Yahoo (and hence AOL) supports Oauth2 access tokens obtained via authorization_code grant flow (they do not support client_credentials grants) for using their SMTP gateway, but this is untested.
 Amazon SES SMTP has its own credentials management system.
 
 Microsoft support is primarily for Microsoft 365 accounts using Graph V1 with the V2 authentication and authorization endpoints.
-Google support is for any Gmail.
-SendOauth2 provides automatic renewal of refresh tokens.  
-Both client secrets and certificates are supported.
-Authorization_code grant is the grant originally supported by Microsoft for SMTP, but in July 2023 they released client_credentials (i.e. application) grant for SMTP. This is a more appropriate solution for daemon applications such PHPMailer than authorization_code (i.e. user) grant. SendOauth2 includes support for client_credentials grant, but an update to PHPMailer's Oauth.php module is also needed and is available from the present author. It is intended (as at October 2023) that this update will form a PR for PHPMailer. 
+Google support is for any Gmail. 
+SendOauth2 provides automatic renewal of refresh tokens for Microsoft 365 email. This is normally unnecessary for Gmail as Google refresh tokens do not life-expire.    
+Both client secrets and X.509 certificates are supported for Microsoft. Only client secrets are supported for Gmail.
+Both authorization_code grant flow and client_credentials (i.e. application) grant flow for SMTP are supported for Microsoft email.  (Client_credentials grant is a more appropriate solution for daemon applications such PHPMailer than authorization_code (i.e. user) grant.) 
+A 2024 release of the wrapper will replace TheLeague's Gmail provider by Google's own API. This will provide support for Google's version of client credentials (Service Accounts) and client certificates (for Service Accounts). Google's API does not currently (November 2023) appear to support certificates for authorization_code grant flow.   
 
+
+There are three very different ways to use the wrapper:
+
+**a.** in an otherwise 'standard' PHPMailer email application, replace the instantiations of the provider, e.g. oauth2-azure, and of PHPMailer's OAuth2 by an instantiation of SendOauth2B using PHPMailer's optional OAuthTokenProvider. The call to SendOauth2B will need all the OAuth2 arguments such as clientID. Parameters peculiar to the email service supplier such as SMTP gateway domain name and the appropriate scope arguments are provided automatically (by SendOauth2C). The PHPMailer's examples folder has a full sample application. 
+
+**b.** like a., except that there is no need to supply the numerous (up to 12) OAuth2 arguments to SendOauth2B, but merely pass the PHPMailer object (instantiated in your code) and the name or number of the chosen 'authentication set'. The latter is described below, but is the name of one of potentially several groups of authentication parameters that are created to generate offline an initial refresh token. The new refresh token and the other parameters are then stored in a one-record file for later operational use by SendOauth2B. 
+
+**c.** complete replacement of your PHPMailer application by a front-end - SendOauth2A  - that, among other things, refreshes Microsoft refresh tokens and writes them back  to the one-record file for use on the next call to PHPMailer.
+
+The remainder of the present document is essentially for b. and c.; a. is covered in the sample application in PHPMailer repository. 
   
 *Why wrap?* Non-trivial websites typically use email at many points (Contact pages, purchase confirmations, PayPal IPNs and so on), and incorporating PHPMailer invocation code and mail settings in each such page makes maintenance unwieldy, especially if OAuth2 is set up to use a different Client Secret for each point  - which is the more secure approach. 
-Furthermore, refresh tokens have a maximum life of 90 days before the issuer must re-authorize to get a new one unless in the meantime he or she had authorised to extend the life of an existing one (the '90 days' is the *maximum inactive time*). The alternative is to ask also for a new refresh token each time an access token is issued.     
+Furthermore, Microsoft refresh tokens have a maximum life of 90 days before the issuer must re-authorize to get a new one unless in the meantime he or she had authorised to extend the life of an existing one (the '90 days' is the *maximum inactive time*). The alternative is to ask for a new refresh token each time an access token is issued.     
 
-Using the SendOauth2 wrapper, a page can contain as little as:  
+Using the complete SendOauth2 wrapper as in c. above, a page can contain as little as:  
 
 ```php
 new SendOauth2A ($mailStatus,[
@@ -35,14 +46,14 @@ SendOauth2's aim is to simplify the implementation of Oauth2 authentication and 
  
 
 ## 1. INSTALLATION ##
-Use Composer to get the latest stable versions of SendOauth2, PHPMailer, thenetworg's Microsoft provider, the PHP League's oauth2-google and oauth2-client [MSFT] providers and so forth. Composer will do all this for you.
+Use Composer to get the latest stable versions of SendOauth2, PHPMailer, thenetworg's Microsoft provider, TheLeague's oauth2-google provider and so forth. Composer will do all this for you.
 
 Composer will install SendOauth2, PHPMailer and the providers in your site's vendor/decomplexity/sendoauth2/src folder; merely specify in your json: 
 
 ```
 {
     "require": {
-        "decomplexity/SendOauth2": ">=2.0"
+        "decomplexity/SendOauth2": ">=3.0"
 }
 }
 ```
@@ -87,7 +98,7 @@ There are three further files that are distributed in the Examples folder and sh
 <img src=https://user-images.githubusercontent.com/65123375/111808913-5bd00f00-88cc-11eb-8d37-bc9c41b75c46.gif#diagram width=60%></img>
 </p>
 
-**FLOW SUMMARY**
+**FLOW SUMMARY (when using the complete wrapper)**
 
 Microsoft and Google OAauth2 settings => paste => SendOauth2D-settings
 
