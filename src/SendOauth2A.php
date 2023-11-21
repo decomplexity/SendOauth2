@@ -14,8 +14,7 @@
       namespace decomplexity\SendOauth2;
 
       use PHPMailer\PHPMailer\PHPMailer;
-	  use PHPMailer\PHPMailer\SMTP;
-
+      use PHPMailer\PHPMailer\SMTP;
 
     /**
      * SendOauth2A Wrapper for Microsoft and Google OIDC/OAUTH2 For PHPMailer
@@ -234,11 +233,12 @@ class SendOauth2A
      */
     protected $email = '';
 
-    /** 
-     * XOAUTH2 or LOGIN - returned to this class. Don't want to refresh the refresh token for Basic Authentication! 
-     * 
+    /**
+     * XOAUTH2 or LOGIN - returned to this class. Don't want to refresh the refresh token
+     * for Basic Authentication!
+     *
      * @var string
-     */ 
+     */
     protected $authTypeSetting = '';
 
 
@@ -253,11 +253,11 @@ class SendOauth2A
      */
     public function __construct(&$mailStatus, $options)
     {
-	  if (session_status() === PHP_SESSION_NONE) {
-       session_start();
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
         }
-	
-	/**
+
+    /**
      * note the call by reference for &$mailStatus so that success or failure can be passed back to global scope
      */
 
@@ -318,15 +318,19 @@ class SendOauth2A
         * to the defaults that will have come via file from SendOauth2D
         */
 
-        $this->SendOauth2B_obj = new SendOauth2B($optionsB);
+        $oauthTokenProvider = new SendOauth2B($optionsB);
+        $this->mail->setOAuth($oauthTokenProvider);
+
+        $this->SendOauth2B_obj = $oauthTokenProvider;
         $this->oauth2_settings_array = $this->SendOauth2B_obj->getOauth2Settings();
+
       /**
        * the following come from SendOauth2B
        */
 
         $this->fromNameDefault = $this->oauth2_settings_array['fromNameDefault'];
         $this->mailSMTPAddress = $this->oauth2_settings_array['mailSMTPAddress'];
-		$this->authTypeSetting = $this->oauth2_settings_array['authTypeSetting'];
+        $this->authTypeSetting = $this->oauth2_settings_array['authTypeSetting'];
 
         $this->mail->isSMTP();                                      // Set mailer to use SMTP
         $this->mail->SMTPAuth = true;                               // Enable SMTP authentication
@@ -335,7 +339,7 @@ class SendOauth2A
         $this->mail->CharSet = PHPMailer::CHARSET_UTF8;             // unless you want iso-8859-1 or whatever
 
         // for diagnostics, uncomment:
-	    // $this->mail->SMTPDebug = SMTP::DEBUG_LOWLEVEL;
+        // $this->mail->SMTPDebug = SMTP::DEBUG_LOWLEVEL;
         //
 
 
@@ -355,7 +359,7 @@ class SendOauth2A
       * or a 'from' address or (a bit pointless...) even neither.
       * Try to do something sensible in most contexts where various combinations
       * of fromName, fromAddress and replyTo are set or not.
-      * Finally, if fromAddress is blank, Reply-T0 addresss is set to do-not-reply@senderdomain
+      * Finally, if fromAddress is blank, Reply-To addresss is set to do-not-reply@senderdomain
        ..... this prevents fromName prefixing a do-not-reply address in a reply
       */
 
@@ -425,7 +429,7 @@ class SendOauth2A
        /**
         * if the following fails, use strip_tags() instead!
         */
-           $this->mail->AltBody = $this->mail->html2text($this->mailText);
+            $this->mail->AltBody = $this->mail->html2text($this->mailText);
         }
 
        /**
@@ -438,14 +442,14 @@ class SendOauth2A
             $mailStatus = self::SEND_OK;
         }
 
-       /** 
-		* get a replacement refresh token 
+       /**
+        * get a replacement refresh token
         */
         if ($this->authTypeSetting == "XOAUTH2") {
- 		    $this->SendOauth2B_obj->storeNewRefreshToken(); 
-		} 
+            $this->SendOauth2B_obj->storeNewRefreshToken();
+        }
 
-       $_SESSION = array();  // unset session variables
+        $_SESSION = array();  // unset session variables
 
     /**
      * Ends __construct method
@@ -474,22 +478,23 @@ class SendOauth2A
     protected function assignValues(array $method, array $from)
     {
         foreach ($from as $this->email) {
-           $valout = $this->parseArrayValue($this->email);
-          if (empty($valout[1])) 
-            $method[0]->{$method[1]}($valout[0]);
-		  else 
-		  $method[0]->{$method[1]}($valout[0], $valout[1]);
+            $valout = $this->parseArrayValue($this->email);
+            if (empty($valout[1])) {
+                $method[0]->{$method[1]}($valout[0]);
+            } else {
+                $method[0]->{$method[1]}($valout[0], $valout[1]);
+            }
+
     /**
      * PHP note: the passed method above needs to be enlosed in {} as above or the statement will be
      * interpreted as ($method[0]->$method)[1] when the function name will be treated as an array
      * and not a string!
-     * 
-	 * Also, PHPMailer methods such as addAddress that take one or two operands do not
-	 * like being given a second empty operand when we only want to provide one
-	 * operaand (e.g. an email address but not followed by a name). 
-	 */
-	 
-      }
+     *
+     * Also, PHPMailer methods such as addAddress that take one or two operands do not
+     * like being given a second empty operand when we only want to provide one
+     * operaand (e.g. an email address but not followed by a name).
+     */
+        }
     }
 
     /**
