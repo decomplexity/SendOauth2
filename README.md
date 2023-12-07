@@ -15,7 +15,7 @@ A 2024 release of the wrapper will replace TheLeague's Gmail provider by Google'
 
 There are three very different ways to use the wrapper:
 
-**a.** in an otherwise 'standard' PHPMailer email application, replace the instantiations of the provider, e.g. oauth2-azure, and of PHPMailer's OAuth2 by an instantiation of SendOauth2B using PHPMailer's optional OAuthTokenProvider. The call to SendOauth2B will need all the OAuth2 arguments such as clientID. Parameters peculiar to the email service supplier such as SMTP gateway domain name and the appropriate scope arguments are provided automatically (by SendOauth2C). The PHPMailer's examples folder has a full sample application. 
+**a.** in an otherwise 'standard' PHPMailer email application, replace the instantiations of the provider, e.g. oauth2-azure, and of PHPMailer's OAuth2 by an instantiation of SendOauth2B using PHPMailer's optional OAuthTokenProvider. The call to SendOauth2B will need all the OAuth2 arguments such as clientID. Parameters peculiar to the email service supplier such as appropriate scope arguments are provided automatically (by SendOauth2C). The PHPMailer's examples folder has a full sample application. 
 
 **b.** like a., except that there is no need to supply the numerous (up to 12) OAuth2 arguments to SendOauth2B, but merely pass the PHPMailer object (instantiated in your code) and the name or number of the chosen 'authentication set'. The latter is described below, but is the name of one of potentially several groups of authentication parameters that are created to generate offline an initial refresh token. The new refresh token and the other parameters are then stored in a one-record file for later operational use by SendOauth2B. 
 
