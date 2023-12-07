@@ -378,7 +378,7 @@ class SendOauth2A
        *
        * Note also that PHPMailer property $Sender is not settable by callers
        * either in global or in SendOauth2D
-       * It is the 'envelope' address and used as a bounce address
+       * It is the 'envelope' address and used as a bounce address.
        */
         $this->mail->From = $this->mailSMTPAddress;
 
