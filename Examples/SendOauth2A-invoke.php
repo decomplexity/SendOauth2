@@ -17,6 +17,7 @@
      require 'vendor/decomplexity/sendoauth2/src/SendOauth2A.php';
      require 'vendor/decomplexity/sendoauth2/src/SendOauth2B.php';
      require 'vendor/decomplexity/sendoauth2/src/SendOauth2C.php';
+     require 'vendor/google/apiclient/src/Utils/Client.php';
     */
 
 
