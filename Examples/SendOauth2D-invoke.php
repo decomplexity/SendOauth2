@@ -13,6 +13,7 @@
      require 'vendor/thenetworg/oauth2-azure/src/Provider/Azure.php';
      require 'vendor/league/oauth2-google/src/Provider/Google.php';
      require 'vendor/decomplexity/sendoauth2/src/SendOauth2C.php';
+     require 'vendor/google/apiclient/src/Utils/Client.php';
      */
 
 
