@@ -36,7 +36,6 @@
                 "Gmail"
                  ]
              }
-
    "autoload": {
         "psr-4": {
         "decomplexity\\SendOauth2\\": "src/"
