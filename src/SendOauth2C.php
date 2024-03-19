@@ -1,6 +1,6 @@
 <?php
 /**
- * SendOauth2C Wrapper For Microsoft and Google OIDC/OAUTH2 For PHPMailer
+ * SendOauth2C Wrapper for Microsoft and Google OIDC/OAUTH2 For PHPMailer
  * PHP Version 5.5 and greater
  *
  * @category Class
@@ -15,10 +15,14 @@ namespace decomplexity\SendOauth2;
 /**  if autoload fails to load the class-files needed, load them with the following:
 require_once 'vendor/thenetworg/oauth2-azure/src/Provider/Azure.php';
 require_once 'vendor/league/oauth2-google/src/Provider/Google.php';
+require_once 'vendor/google/apiclient/src/Client.php';
+require_once 'vendor/google/apiclient-services/src/Gmail.php';
 */
 
 use TheNetworg\OAuth2\Client\Provider\Azure;
 use League\OAuth2\Client\Provider\Google;
+use Google\Client;
+use Google\Service\Gmail;
 
 /**
 
@@ -38,29 +42,43 @@ use League\OAuth2\Client\Provider\Google;
 class SendOauth2C
 {
     /**
+     * name for the Google API  credentials file
+     */
+    const GMAIL_XOUTH2_CREDENTIALS = 'gmail-xoauth2-credentials.json';
+
+    /**
+     * arbitrary name for the Google API app name used in the HTTP header
+     */
+    const GOOGLEAPI_APPLICATION_NAME = 'Google Gmail OAuth2 API';
+
+    /**
+     * specific grant type
+     */
+    const CLIENTCRED = 'client_credentials';
+
+    /**
      * the service provider (Microsoft, Google...)
      * @var string
      */
     protected $serviceProvider = "";
-
 
     /**
      * authentication type: either CRAM-MD5, LOGIN, PLAIN or XOAUTH2
      */
     protected $authTypeSetting = "";
 
-   /**
-    * two parameters which indicate whether or not to generate a refresh token
-    * boolean 'refresh' is sent from SendOauthD and SendOauth2B
-    * It is decoded into accessPrompt (see below) and accessType (set from SendOauthD
-    * as offline and from SendOauth2B as online)
-    * SendOauth2D's output is a refresh token, but each time SendOauthB
-    * is invoked, we don't always want to generate a new refresh token as well as the
-    * access token since Google in particular limits the number of extant refresh tokens
-    * and deletes the old ones
-    * when we need a refresh token generated, accessPrompt is set to 'consent select_account'
-    * which forces a user consent screen  (this is not always needed)
-    */
+    /**
+     * two parameters which indicate whether or not to generate a refresh token
+     * boolean 'refresh' is sent from SendOauthD and SendOauth2B
+     * It is decoded into accessPrompt (see below) and accessType (set from SendOauthD
+     * as offline and from SendOauth2B as online)
+     * SendOauth2D's output is a refresh token, but each time SendOauthB
+     * is invoked, we don't always want to generate a new refresh token as well as the
+     * access token since Google in particular limits the number of extant refresh tokens
+     * and deletes the old ones
+     * when we need a refresh token generated, accessPrompt is set to 'consent select_account'
+     * which forces a user consent screen  (this is not always needed)
+     */
     protected $accessType = "";
     protected $accessPrompt = "";
 
@@ -106,23 +124,35 @@ class SendOauth2C
     protected $clientCertificateThumbprint;
     protected $redirectURI;
 
-   /**
+    /** email address of user to impersonate when using GoogleAPI service account
+    * with delegated domain-wide authority
+    */
+    protected $impersonate;
+
+
+    /**
     determines whether a refresh token is to be generated
     */
     protected $refresh = "";
    
    
-   /**
-    * for GSuite accounts only - used to restrict access to a specific domain
-    * @var string
-    */
+    /**
+     * for GSuite accounts only - used to restrict access to a specific domain
+     * @var string
+     */
     protected $hostedDomain;
 
-   /**
-    * Type of grant flow: e.g. authorization_code or client_credentials
-    * @var string
-    */
+    /**
+     * Type of grant flow: e.g. authorization_code or client_credentials
+     * @var string
+     */
     protected $grantType = "";
+
+    /**
+     * Does the provider support PKCE
+     * @var boolean
+        */
+    protected $isPKCE = true;
 
     /**
      * __construct Method Doc Comment
@@ -132,8 +162,9 @@ class SendOauth2C
 
     public function __construct($optionsC)
     {
-
-        // check to avoid a PHP 'Notice' message, specially as module is re-entrant
+    /**
+     *  check to avoid a PHP 'Notice' message, specially as module is re-entrant
+     */
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
@@ -147,9 +178,9 @@ class SendOauth2C
         $this->serviceProvider = $optionsC['serviceProvider'];
         $this->authTypeSetting = $optionsC['authTypeSetting'];
         $this->hostedDomain = $optionsC['hostedDomain'];
+        $this->impersonate = $optionsC['impersonate'];
         $this->refresh = $optionsC['refresh'];
         $this->grantType = $optionsC['grantType'];
-
     /**
      * authorisation_code grant needs consent value of 'consent'
      * client_credentials grant needs consent value of 'admin_consent'
@@ -160,7 +191,6 @@ class SendOauth2C
         switch ($this->refresh) {
             case true:
                 $this->accessType = 'offline';
-//                $this->accessPrompt = $consentType . " " . 'select_account';
                 $this->accessPrompt = $consentType;
                 break;
 
@@ -170,25 +200,25 @@ class SendOauth2C
                 break;
 
 
-     /**
-      * ends scope parasmeter switch
-      */
+    /**
+     * ends scope parasmeter switch
+     */
         }
 
         switch ($this->serviceProvider) {
             case "Microsoft":
             default:
                 $this->SMTPserver   = 'smtp.office365.com';
-              /**
-               * don't instantiate the Oauth2 provider unless the authType is XOAUTH2
-               */
+    /**
+     * don't instantiate the Oauth2 provider unless the authType is XOAUTH2
+     */
                 if ($this->authTypeSetting != 'XOAUTH2') {
                     break;
                 }
 
-             /**
-              * Instantiate Jan Hajek's TheNetworg provider for MSFT
-              */
+    /**
+     * Instantiate Jan Hajek's TheNetworg provider for MSFT
+     */
                 $this->provider = new Azure(
                     [
                     'clientId'                    => $this->clientId,
@@ -196,69 +226,73 @@ class SendOauth2C
                     'clientCertificatePrivateKey' => $this->clientCertificatePrivateKey,
                     'clientCertificateThumbprint' => $this->clientCertificateThumbprint,
                     'redirectUri'                 => $this->redirectURI,
-                    'accessType'                  =>  $this->accessType,
-                    'prompt'                      =>   $this->accessPrompt,
+                    'accessType'                  => $this->accessType,
+                    'prompt'                      => $this->accessPrompt,
                     'defaultEndPointVersion'      => '2.0',
                     ]
                 );
 
 
-             /**
-              * Azure provider overrides
-              */
-
+    /**
+     * Azure provider overrides
+     */
                 $this->provider->urlAPI = "https://graph.microsoft.com/";
                 $this->provider->API_VERSION = '1.0';
                 
                  
-             /**
-              * NB  NB  NB  NB  NB  NB !
-              * One change may be needed to provider's oauth2-azure-2.0.0 Azure.php
-              * (and perhaps later releases) that cannot be done as an override:
-              * At circa line 210, replace graph.windows.net by graph.microsoft.com
-              * Depending on the version of TheNetworg provider you are using,
-              * both overrides may already be in the code
-              */
+    /**
+     * NB  NB  NB  NB  NB  NB !
+     * One change may be needed to provider's oauth2-azure-2.0.0 Azure.php
+     * (and perhaps later releases) that cannot be done as an override:
+     * At circa line 210, replace graph.windows.net by graph.microsoft.com
+     * Depending on the version of TheNetworg provider you are using,
+     * both overrides may already be in the code
+     */
 
-             /**
-              * NB NB  This scope MUST NOT currently  contain any Graph-specific scopes  NB NB
-              * else AAD will use Graph as 'aud' claim (resource endpoint) and not outlook.office.com.
-              * MSFT 'scope' is quirky and the order of operands is significant
-              * See the WiKi document on GitHub in this repo or in PHPMailer repo entitled
-              * "Microsoft OAuth2 SMTP issues"
-              */
+    /**
+     * NB NB  This scope MUST NOT currently  contain any Graph-specific scopes  NB NB
+     * else AAD will use Graph as 'aud' claim (resource endpoint) and not outlook.office.com.
+     * MSFT 'scope' is quirky and the order of operands is significant
+     * See the WiKi document on GitHub in this repo or in PHPMailer repo entitled
+     * "Microsoft OAuth2 SMTP issues"
+     */
 
-             /**
-              * grantType is assumed valid as it is verified in SendOauth2D
-              * tenant is needed for client_credentials grant since a specific tenant GUID or domain name must be given;
-              * 'common' or 'organizations' or 'consumers' are not valid for client_credentials flow since
-              * a user does not log on with CCF
-              */
+    /**
+     * grantType is assumed valid as it is verified in SendOauth2D
+     * tenant is needed for client_credentials grant since a specific tenant GUID or domain name must be given;
+     * 'common' or 'organizations' or 'consumers' are not valid for client_credentials flow since
+     * a user does not log on with CCF
+     */
                                 
-             /**
-              * scope is flow dependent, and since with CCF there is no user to log on and consent to scope operands,
-              * all permissions set for the app in the Azure portal (the 'default' permissions) are available
-              */
-        
-                
+    /**
+     * scope is flow dependent, and since with CCF there is no user to log on and consent to scope operands,
+     * all permissions set for the app in the Azure portal (the 'default' permissions) are available
+     */
+                 
                 if ($this->grantType == 'authorization_code') {
                     $this->scopeAuth = 'offline_access https://outlook.office.com/SMTP.Send';
                 } else {
                     $this->scopeAuth = 'https://outlook.office365.com/.default';
                     $this->provider->tenant = $this->tenant;
                 }
-                            
-                break;
-           /**
-            * ends MSFT switch case
-            */
 
-           
+
+    /**
+     * The Networg provider does not (March 2024) support PKCE
+     */
+                $this->isPKCE = false;
+
+                break;
+    /**
+     * ends MSFT switch case
+     */
+
+
             case "Google":
                 $this->SMTPserver   = 'smtp.gmail.com'; // Google SMTP server
-              /**
-               * don't instantiate the Oauth2 provider unless the authType is XOAUTH2
-               */
+     /**
+      * don't instantiate the Oauth2 provider unless the authType is XOAUTH2
+      */
                 if ($this->authTypeSetting != 'XOAUTH2') {
                     break;
                 }
@@ -271,40 +305,84 @@ class SendOauth2C
                 'redirectUri'                 => $this->redirectURI,
                 'hostedDomain'                => $this->hostedDomain,
                
-               /**
-                * note that adding:
-                *'scope'  =>  'https://mail.google.com/'
-                * here doesn't work - it needs to be in SendOauth2D's $options in
-                * $authUrl = $provider->getAuthorizationUrl($options);
-                * which is set from $this->scopeAuth below
-                */
+     /**
+      * note that adding:
+      *'scope'  =>  'https://mail.google.com/'
+      * here doesn't work - it needs to be in SendOauth2D's $options in
+      * $authUrl = $provider->getAuthorizationUrl($options);
+      * which is set from $this->scopeAuth below
+      */
                 'accessType'      =>  $this->accessType,
                 'prompt'          =>  $this->accessPrompt
                  ]);
 
-               /**
-                * Google scope
-                */
-                
+      /**
+       * Google scope
+       */
                  $this->scopeAuth  = 'openid' . ' ';
                  $this->scopeAuth .= 'https://mail.google.com' . ' ';
-                 $this->scopeAuth .= 'https://www.googleapis.com/auth/userinfo.email' . ' ';
-                 $this->scopeAuth .= 'https://www.googleapis.com/auth/userinfo.profile';
 
-               /**
-                * note that Google will bounce 'offline_access' as a scope
-                */
-                break;
-           /**
-            * ends second switch
-            */
-        }
+      /**
+       * note that Google will bounce 'offline_access' as a scope
+       */
 
 
       /**
-       * ends __construct method
+       * TheLeague's Google provider does not (March 2024) support PKCE
        */
+                $this->isPKCE = false;
+                break;
+
+
+            case "GoogleAPI":
+    /**
+     * (Basic authentication is not supported by the normal Google API)
+     */
+
+                $this->SMTPserver = 'smtp.gmail.com'; // Google SMTP server
+
+                $this->provider  = new Client();
+                $this->provider -> setScopes([Gmail::MAIL_GOOGLE_COM]); // must be set before setAuthConfig
+                $this->provider -> setAuthConfig(self::GMAIL_XOUTH2_CREDENTIALS);
+                $this->provider -> useApplicationDefaultCredentials();
+                $this->provider -> setApplicationName(self::GOOGLEAPI_APPLICATION_NAME);
+
+    /**
+     * just in case the caller leaves an email address in impersonate property
+     * when switching to authorization_code grant (where setSubject is invalid)
+     */
+                if ($this->impersonate != "" && $this->grantType == self::CLIENTCRED) {
+                    $this->provider -> setSubject($this->impersonate); //service accounts with domain-wide delegation
+                }
+
+    /**
+     * offline/force/consent are needed when using authorization_code flow
+     * Google ignores them when using a service account and changes
+     * 'offline' to 'online' because there is no refresh token
+     */
+                $this->provider -> setAccessType('offline');
+                $this->provider -> setApprovalPrompt('force');
+                $this->provider -> setPrompt('consent');
+
+                $this->scopeAuth =  'https://mail.google.com'; // keep the scopeError check in SendOauth2B happy!
+
+    /**
+     * Google API support for PKCE in server-side clients appeared in March 2023
+     */
+                $this->isPKCE = true;
+
+                break;
+    /**
+     * ends second switch
+     */
+        }
+
+
+    /**
+     * ends __construct method
+     */
     }
+    
 
     public function getScope()
     {
@@ -323,8 +401,18 @@ class SendOauth2C
         return $this->SMTPserver;
     }
 
+    public function getIsPKCE()
+    {
+        return $this->isPKCE;
+    }
 
+    public function getIsGoogleAPI()
+    {
+        $x = $this -> serviceProvider == 'GoogleAPI' ? true : false;
+        return $x;
+    }
+ 
     /**
-    * ends class SendOauth2C
-    */
+     * ends class SendOauth2C
+     */
 }
