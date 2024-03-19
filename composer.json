@@ -25,10 +25,19 @@
         "php": ">=7.4.0",
         "phpmailer/phpmailer": ">=6.6.0",
         "thenetworg/oauth2-azure": ">=2.2.1",
-        "google/apiclient": "^2.15.0",
-        "league/oauth2-google": ">=4.0.1"
-       },
-    "autoload": {
+        "league/oauth2-google": ">=4.0.1",  
+        "google/apiclient": "^2.15.0"
+        },
+    "scripts": {
+        "pre-autoload-dump": "Google\\Task\\Composer::cleanup"
+        },
+        "extra": {
+            "google/apiclient-services": [
+                "Gmail"
+                 ]
+             }
+
+   "autoload": {
         "psr-4": {
         "decomplexity\\SendOauth2\\": "src/"
         }
