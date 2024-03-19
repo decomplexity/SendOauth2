@@ -1,23 +1,33 @@
 # **SendOauth2** #
 A wrapper for PHPMailer SMTP
 
-SendOauth2 supports both OAuth2 and Basic authentication for both Microsoft 365 Exchange email and Google Gmail. 
-Yahoo (and hence AOL) supports Oauth2 access tokens obtained via authorization_code grant flow (they do not support client_credentials grants) for using their SMTP gateway, but this is untested.
-Amazon SES SMTP has its own credentials management system.
+SendOauth2 V4.0.0 supports both OAuth2 and Basic authentication for both Microsoft 365 Exchange email and Google Gmail. 
+Yahoo (and hence AOL) supports Oauth2 access tokens obtained via authorization_code grant flow (they do not support client_credentials grants) for using their SMTP gateway. The wrapper does not support Yahoo / AOL and has no plan to do so.
+Amazon SES SMTP has its own credentials management system and the wrapper does not support it.
 
-Microsoft support is primarily for Microsoft 365 accounts using Graph V1 with the V2 authentication and authorization endpoints.
-Google support is for any Gmail. 
-SendOauth2 provides automatic renewal of refresh tokens for Microsoft 365 email. This is normally unnecessary for Gmail as Google refresh tokens do not life-expire.    
-Both client secrets and X.509 certificates are supported for Microsoft. Only client secrets are supported for Gmail.
-Both authorization_code grant flow and client_credentials (i.e. application) grant flow for SMTP are supported for Microsoft email.  (Client_credentials grant is a more appropriate solution for daemon applications such PHPMailer than authorization_code (i.e. user) grant.) 
-A 2024 release of the wrapper will replace TheLeague's Gmail provider by Google's own API. This will provide support for Google's version of client credentials (Service Accounts) and client certificates (for Service Accounts). Google's API does not currently (November 2023) appear to support certificates for authorization_code grant flow.   
+
+Microsoft support is for Microsoft 365 accounts using Graph V1 with the V2 authentication and authorization endpoints.
+Google support is for any non-legacy version of Gmail. 
+
+When using the 'full' wrapper (option c. below), SendOauth2 provides automatic renewal of refresh tokens for Microsoft 365 email; this is normally unnecessary for Gmail as Google refresh tokens do not life-expire by default. 
+  
+Both client secrets and X.509 certificates are supported for Microsoft.
+TheLeague's Gmail provider only supports client secrets (and only for authorization_code grant). 
+Google's Gmail API supports client secrets for authorization_code grant and X.509 certificates for client_credentials grant (aka Google 'service accounts'), and both are supported by the wrapper. Google's use of .json credentials files is out of kilter with PHPMailer's established client authentication mechanism, so the wrapper creates these files automatically (although Google's own files can optionally be used instead) 
+
+Client_credentials grant is a more appropriate solution for daemon applications such PHPMailer than authorization_code (i.e. user) grant.
+For Microsoft, both authorization_code grant and client_credentials (i.e. application) grant flows for SMTP are supported.  
+For the Google API, both authorization_code grant and client_credentials (service accounts) grant for SMTP are supported (see github repository/library googleapis/google-api-php-client)
+TheLeague's Google Gmail provider only supports authorization_code grant, and this is supported by the wrapper.
+
+Where the provider or client supports them, both $_SESSION 'state' exchange and PKCE code exchange are implemented automatically by the wrapper to forestall CSRF attacks during authorisation_code flow.   
 
 
 There are three very different ways to use the wrapper:
 
-**a.** in an otherwise 'standard' PHPMailer email application, replace the instantiations of the provider, e.g. oauth2-azure, and of PHPMailer's OAuth2 by an instantiation of SendOauth2B using PHPMailer's optional OAuthTokenProvider. The call to SendOauth2B will need all the OAuth2 arguments such as clientID. Parameters peculiar to the email service supplier such as appropriate scope arguments are provided automatically (by SendOauth2C). The PHPMailer's examples folder has a full sample application. 
+**a.** in an otherwise 'standard' PHPMailer email application, replace the instantiations of the provider, e.g. oauth2-azure, and of PHPMailer's OAuth2 by an instantiation of SendOauth2B using PHPMailer's optional OAuthTokenProvider. The call to SendOauth2B will need all the usual OAuth2 arguments such as clientID. Parameters peculiar to the email service supplier such as appropriate scope arguments are provided automatically (by SendOauth2C). The PHPMailer's examples folder has a full sample application. 
 
-**b.** like a., except that there is no need to supply the numerous (up to 12) OAuth2 arguments to SendOauth2B, but merely pass the PHPMailer object (instantiated in your code) and the name or number of the chosen 'authentication set'. The latter is described below, but is the name of one of potentially several groups of authentication parameters that are created to generate offline an initial refresh token. The new refresh token and the other parameters are then stored in a one-record file for later operational use by SendOauth2B. 
+**b.** like a., except that there is no need to supply the numerous (up to 16) OAuth2 arguments to SendOauth2B, but merely pass the PHPMailer object (instantiated in your code) and the name or number of the chosen 'authentication set'. The latter is described below, but is the name of one of potentially several groups of authentication parameters that are created to generate offline an initial refresh token. The new refresh token and the other parameters are then stored in a one-record file for later operational use by SendOauth2B. 
 
 **c.** complete replacement of your PHPMailer application by a front-end - SendOauth2A  - that, among other things, refreshes Microsoft refresh tokens and writes them back  to the one-record file for use on the next call to PHPMailer.
 
@@ -53,21 +63,21 @@ Composer will install SendOauth2, PHPMailer and the providers in your site's ven
 ```
 {
     "require": {
-        "decomplexity/SendOauth2": ">=3.0"
+        "decomplexity/SendOauth2": ">=4.0"
 }
 }
 ```
 
-TWO CODE CHANGES ARE CURRENTLY (March 2023) NEEDED:
+TWO CODE CHANGES ARE CURRENTLY (March 2024) NEEDED:
 
 **NB(1): one code change is currently needed to the Microsoft provider thenetworg oauth2-azure Azure.php
 This cannot be done as an override:
-- for release 2.0.1, at line 214, replace  *graph.windows.net*  by  *graph.microsoft.com*  ** 
+- for release 19 (v2.2.2), at lines 40 and 280, replace  *graph.windows.net*  by  *graph.microsoft.com*  ** 
 Any later versions of Azure may well have this already amended, as Azure AD Graph is deprecated by Microsoft and replaced by Microsoft Graph. 
 
 
 
-**NB(2): a one-line code addition is needed to TheLeague oauth2-client/src/Token/AccessToken.php if you wish to have refresh tokens updated automatically. The wrapper checks for this change; if it is not present, the wrapper will default to letting refresh tokens expire in the normal way.
+**NB(2): a one-line code addition is needed to TheLeague oauth2-client/src/Token/AccessToken.php if you wish to have refresh tokens updated automatically. The wrapper checks for this change; if it is not present, the wrapper will default to letting refresh tokens expire (if they do; Google's normally don't) in the normal way.
 The existing code from around line 107 (exact line is version dependent) reads:
 
 ```
@@ -75,7 +85,7 @@ The existing code from around line 107 (exact line is version dependent) reads:
             $this->refreshToken = $options['refresh_token'];
 ```
 
-Then add the line:
+Then before the }, add the line:
 
 ```
   	        $_SESSION[__NAMESPACE__ . "\\updatedRefreshToken"] =  $this->refreshToken; 
@@ -83,16 +93,16 @@ Then add the line:
 
 
 ## 2. PROVIDERS: ##
-The Gmail provider is the PHP League * *oauth2-google* *  written by Woody Gilk and others.
 The Microsoft  provider is thenetworg * *oauth2-azure* * written by Jan Hajek and others.
-
+The Google API is the 'official' Client API written by Google. 
+The Gmail provider is the PHP League * *oauth2-google* *  written by Woody Gilk and others.
 
 
 ## 3. CLASSES and FILES ##
-SendOauth2 consists of four PHP classes held in PHP files of those names, stored by default in the vendor/decomplexity/sendoauth2/src folder.
+SendOauth2 consists of four PHP classes and one Trait held in PHP files of those names, stored by default in the vendor/decomplexity/sendoauth2/src folder.
 
-There are three further files that are distributed in the Examples folder and should be moved to /vendor's parent folder for modification by the developer. One file (SendOauth2D-settings) is a template for authenticating to four email services: Microsoft 365 OAuth2, Microsoft 365 Basic Authentication (userid and password), Google Gmail OAuth2 and Google Gmail Basic Authentication. This file is in the form of a PHP 'switch' block with four 'cases' and is required by class SendOauth2D. The other two files (SendOauth2A-invoke and SendOauth2D-invoke) are templates for instantiating SendOauth2A (which 'sends mail') and SendOauthD (which, for authorization_code grant, acquires OAuth2 refresh tokens). The sample code in SendOauth2A-invoke is intended to be edited and incorporated into the developer's website pages.      
-
+There are three further files that are distributed in the Examples folder and should be moved to /vendor's parent folder for modification by the developer. One file (SendOauth2D-settings) is a template for authenticating up to five email services: Microsoft 365 OAuth2, Microsoft 365 Basic Authentication (userid and password), TheLeague's Google Gmail OAuth2 and Basic Authentication, and Google API OAuth2 (with 'domain-wide delegation' when using service accounts). This file is in the form of a PHP 'switch' block with five 'cases' and is required by class SendOauth2D. The other two files (SendOauth2A-invoke and SendOauth2D-invoke) are templates for instantiating SendOauth2A (which 'sends mail') and SendOauthD (which, for authorization_code grant, acquires OAuth2 refresh tokens). The sample code in SendOauth2A-invoke is intended to be edited and incorporated into the developer's website pages when using the complete wrapper; if instead the developer elects to use the wrapper via an otherwise 'standard' PHPMailer email application, this is also supporteed and an example is given in PHPMailer 'Examples'.  
+      
 
 <p align=center>
 <img src=https://user-images.githubusercontent.com/65123375/111808913-5bd00f00-88cc-11eb-8d37-bc9c41b75c46.gif#diagram width=60%></img>
@@ -116,7 +126,9 @@ SendOauth2B authenticates, then => SendOauth2A for PHPMailer sending
 - SendOauth2B -  instantiated from SendOauthA, primarily to perform Oauth2 authentication
 - SendOauth2C -  the Provider factory class. It is instantiated from SendOauth2B AND from SendOauth2D
 - SendOauth2D -  is instantiated standalone from a few lines of global PHP such as in section 7 below.
-It 'requires' a file SendOauth2D-settings.php that contains security settings such as clientId, clientSecret, redirectURI, service provider (Microsoft, Google) and authentication type (e.g. XOAUTH2).
+- SendOauth2ETrait -  is used by  SendOauth2B and SendOauth2D to create and write the .json credentials file used by Google API. 
+
+SendOauth2D 'requires' a file SendOauth2D-settings.php that contains security settings such as clientId, clientSecret, redirectURI, service provider (Microsoft, Google), authentication type (e.g. XOAUTH2) and so on. 
 There is a group of these security settings for each PHPMailer invocation (typically one website page) that needs different security settings or a different provider: one website can use any combination of Microsoft and Google (and any others added further to SendOauth2C) and any number of different security groups. 
 Each setting has unique identifier (numbered 1,2,3,4 in the template SendOauth2D-settings), but developers are free to use anything more meaningful. 
 When SendOauth2D is instantiated by SendOauth2D-invoke (see Section 7 below), the latter specifies the group number, and SendOauth2D then produces an 'interchange' file with (for OAuth2) a refresh token plus other security settings such as client ID and client Secret. If a Basic authentication group is selected, the file output is similar but includes an SMTP password and excludes Oauth2 settings. There is one interchange file for each group of security settings.
@@ -128,10 +140,10 @@ ClientId, clientSecret, redirectURI and refreshToken thus only need to be copied
 
 
 ## 4. SERVICE SETTINGS: ##
-For Microsoft AAD client setup , it appears unnecessary to add 'offline_access' and 'SMTP.Send' Graph permissions as long as SendOauth2D authenticates with a logon using the user principal name (email address) because Graph will add them automatically. This is the result of Microsoft implementing Exchange (outlook.office.com) as the resource API for OAuth2 authenticated SMTP Send but not Graph (although Exchange does not itself now have a SMTP.Send permission to use!). If SendOauth2D authenticates with a logon from another email account in the same tenant, it may be necessary to add these as Graph permissions and 'grant Admin consent' for the tenant. MSFT scope permissions are quirky; they are explained in great detail in PHPMailer's WiKi document 'Microsoft OAuth2 SMTP issues' 
+For Microsoft AAD client setup , it appears unnecessary to add 'offline_access' and 'SMTP.Send' Graph permissions as long as SendOauth2D authenticates with a logon using the user principal name (email address) because Graph will add them automatically. This is the result of Microsoft implementing Exchange (outlook.office.com) as the resource API for OAuth2 authenticated SMTP Send but not Graph (although Exchange does not itself now have a SMTP.Send permission to use!). If SendOauth2D authenticates with a logon from another email account in the same tenant, it may be necessary to add these as Graph permissions and 'grant Admin consent' for the tenant. MSFT scope permissions are quirky; they are explained in great detail in PHPMailer's WiKi document 'Microsoft OAuth2 SMTP issues'. To use Microsoft client_credentials grant, the application must be registered (using Exchange Online PowerShell) as a service principal since the application itself and not a user - whether user principal or a delegated user -  will be invoking the Exchange resource; see https://learn.microsoft.com/en-gb/exchange/client-developer/legacy-protocols/how-to-authenticate-an-imap-pop-smtp-application-by-using-oauth#authenticate-connection-requests.      
 
-Google is simpler, but it is worth ensuring that when adding permissions via the OAuth consent screen that the Gmail API has been enabled (or you won’t be able to find 'mail.google.com' in order to select it).
-
+Google is less quirky, but it is worth ensuring that when adding permissions via the OAuth consent screen that the Gmail API has been enabled (or you won’t be able to find 'mail.google.com' in order to select it!). When using client credentials (service accounts) with the GoogleAPI, the permission to access Gmail is set somewhat obscurely in: https://console.cloud.google.com/apis/credentials and https://console.cloud.google.com/iam-admin/serviceaccounts (advanced settings / Domain-wide delegation) => https://admin.google.com/ => Security => Access and data control => API controls => Manage Domain-wide delegation => Add new [API client]. 
+Registering impersonation of a service account is similar to registering Amazon Web Services's Security Token Service API 'Roles'. 
 
 
 ## 5. SendOauth2D SETTINGS: ##
@@ -141,7 +153,6 @@ There are two additional settings:
  - 'SMTPAddressDefault' - which you set to the user principal name (e.g. the AAD admin email address)
  - 'fromNameDefault' - the default you want to use for the email * *From* * name
 Both of these can be overridden when SendOauth2A is invoked.
-
 
 
 
@@ -250,6 +261,7 @@ session_start();
 require 'vendor/autoload.php';
 
 new SendOauth2A ($mailStatus,[
+
 'mailTo' => ['john.doe@deer.com'],
 'mailSubject' => 'Deer dear!',
 'mailText'=>'Lovely photo you sent. Tnx',
