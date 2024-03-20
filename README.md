@@ -56,7 +56,7 @@ SendOauth2's aim is to simplify the implementation of Oauth2 authentication and 
  
 
 ## 1. INSTALLATION ##
-Use Composer to get the latest stable versions of SendOauth2, PHPMailer, thenetworg's Microsoft provider, TheLeague's oauth2-google provider and so forth. Composer will do all this for you.
+Use Composer to get the latest stable versions of SendOauth2, PHPMailer, thenetworg's Microsoft provider, TheLeague's oauth2-google provider, the Google API (which is both a provider and a service) and so forth. Composer will do all this for you.
 
 Composer will install SendOauth2, PHPMailer and the providers in your site's vendor/decomplexity/sendoauth2/src folder; merely specify in your json: 
 
@@ -67,6 +67,30 @@ Composer will install SendOauth2, PHPMailer and the providers in your site's ven
 }
 }
 ```
+
+When Composer is 'requiring' Google API's Gmail support, it will install into folder apiclient-services not just Gmail but the full gamut of Google services. Apart from this being a waste of space, the huge number of files it contains can be a problem if you want to download it to e.g. a desktop client.
+You can either manually delete all but Gmail from apiclient-services and from apiclient-services/src or use the following Composer script before downloading:
+
+```
+{
+    "require": {
+        "google/apiclient": "^2.15.0"
+    },
+
+ "scripts": {
+        "pre-autoload-dump": "Google\\Task\\Composer::cleanup"
+        },
+        "extra": {
+            "google/apiclient-services": [
+                "Gmail"
+                 ]
+             },
+}
+   
+```
+
+Before running this script, you may need to delete the apiclient-services folder and then run Composer update.
+      
 
 TWO CODE CHANGES ARE CURRENTLY (March 2024) NEEDED:
 
