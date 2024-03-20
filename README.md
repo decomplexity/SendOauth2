@@ -1,7 +1,7 @@
 # **SendOauth2** #
 A wrapper for PHPMailer SMTP
 
-**NOTE:** *To avoid a breaking change, V3 (all subversions) had grantTypeValue default to authorization_code. In V4.0.0 and any subsequent releases, parameter grantTypeValue has changed to grantType. grantTypeValue will still be accepted but ignored, with the default applying. This should only affect those using MSFT support with client_credentials.*  
+**NOTE**: *To avoid a breaking change, V3 (all subversions) had grantTypeValue default to authorization_code. In V4.0.0 and any subsequent releases, parameter grantTypeValue has changed to grantType. grantTypeValue will still be accepted but ignored, with the default applying. This should only affect those using MSFT support with client_credentials.*  
 
 
 SendOauth2 V4.0.0 supports both OAuth2 and Basic authentication for both Microsoft 365 Exchange email and Google Gmail. 
@@ -72,7 +72,7 @@ Composer will install SendOauth2, PHPMailer and the providers in your site's ven
 ```
 
 When Composer is 'requiring' Google API's Gmail support, it will install into folder apiclient-services not just Gmail but the full gamut of Google services. Apart from this being a waste of space, the huge number of files it contains can be a problem if you want to download it to e.g. a desktop client.
-You can either manually delete all but Gmail from apiclient-services and from apiclient-services/src or use the following Composer script before downloading:
+You can either manually delete from apiclient-services/src all but Gmail.php and the Gmail folder (but the folder does not even seem to be needed) or use the following Composer script before downloading:
 
 ```
 {
