@@ -1,6 +1,9 @@
 # **SendOauth2** #
 A wrapper for PHPMailer SMTP
 
+NOTE: To avoid a breaking change, V3 (all subversions) had grantTypeValue default to authorization_code. In V4.0.0 and any subsequent releases, parameter grantTypeValue has changed to grantType. grantTypeValue will still be accepted but ignored, with the default applying. This should only affect those using MSFT support with client_credentials.  
+
+
 SendOauth2 V4.0.0 supports both OAuth2 and Basic authentication for both Microsoft 365 Exchange email and Google Gmail. 
 Yahoo (and hence AOL) supports Oauth2 access tokens obtained via authorization_code grant flow (they do not support client_credentials grants) for using their SMTP gateway. The wrapper does not support Yahoo / AOL and has no plan to do so.
 Amazon SES SMTP has its own credentials management system and the wrapper does not support it.
