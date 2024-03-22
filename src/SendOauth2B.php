@@ -353,6 +353,15 @@ class SendOauth2B implements OAuthTokenProvider
      */
             $this->checkParm('SMTPPassword', $optionsB, $this->SMTPPassword);
             $this->assignParms($optionsC2);
+
+    /**
+     * redirectURI is not needed for authentication, but GoogleAPI insists on
+     * a valid format URI in .json - which (if GoogleAPI) we will create, so
+     * exchange a null URI for a dummy one
+     */
+            if (empty($this->redirectURI)) {
+                $this->redirectURI = "https://blah.com";
+            }
         } else {
        
 
