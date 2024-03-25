@@ -7,7 +7,7 @@
  * mechanism provided by these systems: authorization_code grant and client_credentials grant
  * (aka Google 'service accounts'), client secrets and X.509 certificates, $_SESSION 'state'
  * and PKCE code exchanges, and creation on the fly of GoogleAPI's .json credentials files.
- * Appropriate scopes (client permissions) and 'provider' overrides are added automatically.
+ * Appropriate scopes (client permissions) and 'provider' overrides are added automatically
  *
  * The wrapper is installed with Composer from the decomplexity/SendOauth2 repo; see its README.
  *
