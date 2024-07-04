@@ -42,9 +42,11 @@ use Google\Service\Gmail;
 class SendOauth2C
 {
     /**
-     * name for the Google API  credentials file
+     * the Google API  credentials file
      */
-    const GMAIL_XOUTH2_CREDENTIALS = 'gmail-xoauth2-credentials.json';
+    protected $gmailXoauth2Credentials;
+
+    protected $writeGmailCredentialsFile;  // for future use
 
     /**
      * arbitrary name for the Google API app name used in the HTTP header
@@ -149,6 +151,18 @@ class SendOauth2C
     protected $grantType = "";
 
     /**
+     * This should only be set in global if caller wants to override the
+     * SMTPAddressDefault set for that switch case in SendOauth2D
+     * snd is carried over in the refresh token. When SendOauth2D is run,
+     * for MSFT at least the currently logged-on member of the tenant is authorized
+     * or a member is requested to log to authorize. This must normally have email address
+     * that is the same as thst set in SMTPAddressDefault, otherwise SendOAuth2B authentication fails.
+     *
+     * @var string
+     */
+    protected $mailSMTPAddress;
+
+    /**
      * Does the provider support PKCE
      * @var boolean
         */
@@ -178,9 +192,14 @@ class SendOauth2C
         $this->serviceProvider = $optionsC['serviceProvider'];
         $this->authTypeSetting = $optionsC['authTypeSetting'];
         $this->hostedDomain = $optionsC['hostedDomain'];
+        $this->serviceAccountName = $optionsC['serviceAccountName']; // for future use
+        $this->projectID = $optionsC['projectID']; // for future use
         $this->impersonate = $optionsC['impersonate'];
+        $this->gmailXoauth2Credentials = $optionsC['gmailXoauth2Credentials'];
         $this->refresh = $optionsC['refresh'];
         $this->grantType = $optionsC['grantType'];
+        $this->mailSMTPAddress = $optionsC['mailSMTPAddress'];
+
     /**
      * authorisation_code grant needs consent value of 'consent'
      * client_credentials grant needs consent value of 'admin_consent'
@@ -343,7 +362,7 @@ class SendOauth2C
 
                 $this->provider  = new Client();
                 $this->provider -> setScopes([Gmail::MAIL_GOOGLE_COM]); // must be set before setAuthConfig
-                $this->provider -> setAuthConfig(self::GMAIL_XOUTH2_CREDENTIALS);
+                $this->provider -> setAuthConfig($this-> gmailXoauth2Credentials);
                 $this->provider -> useApplicationDefaultCredentials();
                 $this->provider -> setApplicationName(self::GOOGLEAPI_APPLICATION_NAME);
 
@@ -351,8 +370,11 @@ class SendOauth2C
      * just in case the caller leaves an email address in impersonate property
      * when switching to authorization_code grant (where setSubject is invalid)
      */
-                if ($this->impersonate != "" && $this->grantType == self::CLIENTCRED) {
-                    $this->provider -> setSubject($this->impersonate); //service accounts with domain-wide delegation
+                if ($this->grantType == self::CLIENTCRED) {
+                    if ($this->impersonate == "") {
+                        $this->impersonate = $this->mailSMTPAddress;
+                    }
+                    $this->provider -> setSubject($this->impersonate);  // svc accts with domain-wide deleg.
                 }
 
     /**
