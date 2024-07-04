@@ -7,7 +7,7 @@
  * @category Class
  * @see      https://github.com/PHPMailer/PHPMailer/ The PHPMailer GitHub project
  * @author   Max Stewart (decomplexity) <SendOauth2@decomplexity.com>
- * @copyright  2021 Max Stewart
+ * @copyright   2021 Max Stewart
  * @license  MIT
  */
       namespace decomplexity\SendOauth2;
