@@ -10,7 +10,7 @@
  * @license  MIT
  * @note SendOauth2ETrait provides common settings and methods for SendOauth2B
  * and SendOauth2D. It also provides uppercase 'constant' properties
- * because PHP Traits earlier than PHP 8.2.0 do not support CONSTS  
+ * because PHP Traits earlier than PHP 8.2.0 do not support CONSTS
  */
 
 
@@ -20,14 +20,13 @@
  * Provides generic array navigation tools.
  */
 trait SendOauth2ETrait
-
 {
 
 /**
  * NB: THESE 'CONSTANTS' ARE NOT PHP CONSTs PER SE.
- * THEY ARE NEVERTHLESS IN UPPERCASE SO THAT IN 
+ * THEY ARE NEVERTHLESS IN UPPERCASE SO THAT IN
  * A FUTURE RELEASE OF THE WRAPPER PHP THEY CAN BE THE SINGLE
- * SOURCE OF CONSTs 
+ * SOURCE OF CONSTs
 */
 
    /**
@@ -45,7 +44,7 @@ trait SendOauth2ETrait
     * caller is SendOauth2A and not global code.
     * crude - but saves passing an additional argument
     */
-    private $NUMPARMS = 3;
+    //private $NUMPARMS = 3;
 
 
    /**
@@ -58,16 +57,16 @@ trait SendOauth2ETrait
 
 
    /**
-    * name for the Google API  credentials file
+    * the Google API  credentials file
+    protected $gmailXoauth2Credentials;  inherited from SendOauth2B or D
     */
-    private $GMAIL_XOUTH2_CREDENTIALS = 'gmail-xoauth2-credentials.json';
 
    /**
-    * a choice of whether the Google credentials file is to be written
-    * (or you wish to use an existing external 'credentials json' from 
+    * a yes/no choice of whether the Google credentials file is to be written
+    * (or you wish to use an existing external 'credentials json' from
     * https://console.cloud.google.com/
+    protected $writeGmailCredentialsFile; inherited from SendOauth2B or D
     */
-    private $WRITE_GMAIL_CREDENTIALS_FILE = true;
 
    /**
     * Google's API methods are  bit different from MSFT and TheLeagure Google ones
@@ -88,13 +87,14 @@ trait SendOauth2ETrait
 
 
 
-    protected function GoogleAPIOauth2File() 
-   {
+    protected function GoogleAPIOauth2File()
+    {
+
    /**
     *check if we actually need to write this file
     */
-      if ($this -> serviceProvider == $this->GOOGLE_API &&
-      $this-> WRITE_GMAIL_CREDENTIALS_FILE) {
+        if ($this -> serviceProvider == $this->GOOGLE_API &&
+            $this-> writeGmailCredentialsFile == 'yes') {
 
    /**
     * create json. Note that redirectURI is not used to obtain an access token,
@@ -102,93 +102,89 @@ trait SendOauth2ETrait
     * CONSTs are assigned to variables because they are not evaluated within double quotes
     */
 
-    $auth_uri = $this->AUTH_URI;
-    $token_uri = $this->TOKEN_URI;
-    $auth_provider_x509_cert_url = $this->AUTH_PROVIDER_X509_CERT_URL;
+            $auth_uri = $this->AUTH_URI;
+            $token_uri = $this->TOKEN_URI;
+            $auth_provider_x509_cert_url = $this->AUTH_PROVIDER_X509_CERT_URL;
 
-    $googleAPIGrantType = ($this->grantType == $this->CLIENTCRED) ? 
-         $this->SERVICE_ACCOUNT :
-         $this->AUTHCODE;
-
+            $googleAPIGrantType = ($this->grantType == $this->CLIENTCRED) ?
+            $this->SERVICE_ACCOUNT :
+            $this->AUTHCODE;
 
     /**
      * the private key contains uneascaped many \n
-     * When used below, these need to be escaped and json enclode_does this    
+     * When used below, these need to be escaped and json enclode_does this
      */
 
-    switch ($googleAPIGrantType) {
+            switch ($googleAPIGrantType) {
    /**
     * note: json_encode with UTF-8 chars escapes each / in https://
     * in practice, json interpreters accept \/ as /
     * bit you never can tell!
     */
 
-    case $this->AUTHCODE:
+                case $this->AUTHCODE:
+                    $xoauth2_credentials = json_encode(
 
-   $xoauth2_credentials = json_encode(
+                        ['web' =>
+                        ['client_id' => $this->clientId,
+                        'project_id' => $this->projectID,
+                        'auth_uri' => $this->AUTH_URI,
+                        'token_uri' => $this->TOKEN_URI,
+                        'auth_provider_x509_cert_url' => $this->AUTH_PROVIDER_X509_CERT_URL,
+                        'client_secret' => $this->clientSecret,
+                        'redirect_uris' => [$this->redirectURI],
+                        'javascript_origins' => ['blah'],
+                        ]
+                        ],
+                        JSON_UNESCAPED_SLASHES // or json_encode escapes each / in https://
+                    );
 
-        ['web'=>
-        ['client_id'=> $this->clientId,
-        'project_id' => $this->projectID,
-        'auth_uri'=> $this->AUTH_URI,
-        'token_uri'=> $this->TOKEN_URI,
-        'auth_provider_x509_cert_url'=> $this->AUTH_PROVIDER_X509_CERT_URL,
-        'client_secret' => $this->clientSecret,
-        'redirect_uris' => [$this->redirectURI],
-        'javascript_origins'=>['blah'],
-        ]
-       ]
-        ,JSON_UNESCAPED_SLASHES // or json_encode escapes each / in https://
-    );
-
-    break;
-
-
-
-    case $this->SERVICE_ACCOUNT:
-
-    $xoauth2_credentials = json_encode(
-    [
-        'type' => 'service_account',
-        'project_id' => $this->projectID,
-        'private_key_id'=> $this->clientCertificateThumbprint,
-        'private_key'=> $this->clientCertificatePrivateKey,
-        'client_email' => $this->serviceAccountName . '@' . $this->projectID . '.iam.gserviceaccount.com',  
-        'client_id' => $this->clientId, 
-        'auth_uri'=> $this->AUTH_URI,
-        'token_uri'=> $this->TOKEN_URI,
-        'auth_provider_x509_cert_url'=> $this->AUTH_PROVIDER_X509_CERT_URL,
-        'client_x509_cert_url'=> 'https://www.googleapis.com/robot/v1/metadata/x509/' . $this->serviceAccountName . '%40'. $this->projectID . '.iam.gserviceaccount.com', 
-        'universe_domain'=> $this->UNIVERSE_DOMAIN
-    ]
-    ,JSON_UNESCAPED_SLASHES // or json_encode escapes each / in https://. 
-    );
+                    break;
 
 
 
-    break;
-    } // end switch
+                case $this->SERVICE_ACCOUNT:
+                    $xoauth2_credentials = json_encode(
+                        [
+                        'type' => 'service_account',
+                        'project_id' => $this->projectID,
+                        'private_key_id' => $this->clientCertificateThumbprint,
+                        'private_key' => $this->clientCertificatePrivateKey,
+                        'client_email' => $this->serviceAccountName . '@' . $this->projectID .
+                                          '.iam.gserviceaccount.com',
+                        'client_id' => $this->clientId,
+                        'auth_uri' => $this->AUTH_URI,
+                        'token_uri' => $this->TOKEN_URI,
+                        'auth_provider_x509_cert_url' => $this->AUTH_PROVIDER_X509_CERT_URL,
+                        'client_x509_cert_url' => 'https://www.googleapis.com/robot/v1/metadata/x509/' .
+                                                  $this->serviceAccountName . '%40' .
+                                                  $this->projectID . '.iam.gserviceaccount.com',
+                        'universe_domain' => $this->UNIVERSE_DOMAIN
+                        ],
+                        JSON_UNESCAPED_SLASHES // or json_encode escapes each / in https://.
+                    );
+
+                    break;
+            } // end switch
 
     /**
       * json_encode may have escaped \n (as \\n). Remove them.
       * Note that the \\ in str_replace must itself be escaped!
       */
-      $xoauth2_credentials = str_replace('\\\n','\\n',$xoauth2_credentials); 
+            $xoauth2_credentials = str_replace('\\\n', '\\n', $xoauth2_credentials);
 
     /**
      * write it for Google Oauth2 to use to create an access token
      */
 
-    if ($this->WRITE_GMAIL_CREDENTIALS_FILE) {
-
-            file_put_contents(
-            $this->GMAIL_XOUTH2_CREDENTIALS,
-            $xoauth2_credentials
-            );
+            if ($this->writeGmailCredentialsFile == 'yes') {
+                file_put_contents(
+                    $this-> gmailXoauth2Credentials,
+                    $xoauth2_credentials
+                );
+            }
         }
-
-    }
-} // ends GoogleAPIOauth2File method
+    } // ends GoogleAPIOauth2File method
 
 /**
   * ends Trait SendOauth2ETrait
