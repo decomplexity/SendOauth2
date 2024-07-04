@@ -6,7 +6,7 @@
  * SendOauth2ETrait Trait
  * @category Trait
  * @package  SendOauth2
- * @author   Max Stewart (decomplexity) <SendOauth2@decomplexity.com>
+ * @author   Max Stewart  (decomplexity) <SendOauth2@decomplexity.com>
  * @license  MIT
  * @note SendOauth2ETrait provides common settings and methods for SendOauth2B
  * and SendOauth2D. It also provides uppercase 'constant' properties
