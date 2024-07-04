@@ -58,10 +58,25 @@ class SendOauth2B implements OAuthTokenProvider
     protected const NUMPARMS = 3;
 
     /**
+     * for GoogleAPI service accounts: a user-specified .json file name
+     * but one that will default to the value shown when called from
+     * global code. When called from SendOauth2A, it will use a default
+     * set in the interchange file by SendOauth2D.
+     */
+
+    protected const GMAIL_XOAUTH2_CREDENTIALS = "gmail-xoauth2-credentials.json";
+
+    /**
+     * for GoogleAPI service accounts:  a boolean specifying
+     * whether oor not to dynamically create the .json credentials file
+     */
+    protected const WRITE_GMAIL_CREDENTIALS_FILE = 'yes';
+
+    /**
      * Google's API methods are  bit different from MSFT and TheLeagure Google ones
      * Google access tokens are also returned in an array with other unnecessary stuff
      */
-    const GOOGLE_API = 'GoogleAPI';
+    protected const GOOGLE_API = 'GoogleAPI';
 
   
     /**
@@ -144,9 +159,23 @@ class SendOauth2B implements OAuthTokenProvider
      * for GoogleAPI service accounts with delegated domain-wode authority.
      * The email address of the user for the service account to impersonate.
      * if in doubt, use the $mailSMTPAddress value here and in Google Admin
-     * console registration
+     * console registration, but it will default to that anyway
      */
     protected $impersonate = "";
+
+    /**
+     * for GoogleAPI service accounts: a user-specified .json file name
+     * but one that will default to the value shown when called from
+     * global code. When called from SendOauth2A, it will use a default
+     * set in the interchange file by SendOauth2D.
+     */
+    protected $gmailXoauth2Credentials = "";
+
+    /**
+     * for GoogleAPI service accounts:  a yes/no string specifying
+     * whether or not to dynamically create the .json
+     */
+    protected $writeGmailCredentialsFile = "";
 
     /**
      * XOAUTH2 refresh token initially generated offline by SendOauth2D
@@ -311,6 +340,7 @@ class SendOauth2B implements OAuthTokenProvider
             $this->checkParm('clientCertificateThumbprint', $optionsB, $this->clientCertificateThumbprint);
             $this->checkParm('redirectURI', $optionsB, $this->redirectURI);
             $this->checkParm('serviceProvider', $optionsB, $this->serviceProvider);
+
     /**
      * authTypeSetting is sent back to caller - global code or SendOauth2A -
      * so that caller can decide whether to try to get a new refresh token if XOAUTH2
@@ -326,11 +356,24 @@ class SendOauth2B implements OAuthTokenProvider
             $this->checkParm('serviceAccountName', $optionsB, $this->serviceAccountName);
             $this->checkParm('projectID', $optionsB, $this->projectID);
             $this->checkParm('impersonate', $optionsB, $this->impersonate);
+            $this->checkParm('gmailXoauth2Credentials', $optionsB, $this-> gmailXoauth2Credentials);
+            $this->checkParm('writeGmailCredentialsFile', $optionsB, $this-> writeGmailCredentialsFile);
 
             $this->refresh = false;
             $this->checkParm('refreshToken', $optionsB, $this->refreshToken);
             $this->checkParm('grantType', $optionsB, $this->grantType);
 
+    /**
+     *  these next two checks are needed because if a global code call does not
+     *  specify values, they will be set to "" above rather than the defaults.
+     */
+            if ($this->gmailXoauth2Credentials == "") {
+                $this->gmailXoauth2Credentials = self::GMAIL_XOAUTH2_CREDENTIALS;
+            }
+
+            if ($this->writeGmailCredentialsFile == "") {
+                $this->writeGmailCredentialsFile = self::WRITE_GMAIL_CREDENTIALS_FILE;
+            }
 
     /**
      * PHPMailer instance from calling global code or wrapper SendOauth2A
@@ -407,6 +450,9 @@ class SendOauth2B implements OAuthTokenProvider
             $this->serviceAccountName,
             $this->projectID,
             $this->impersonate,
+            $this->gmailXoauth2Credentials,
+            $this->writeGmailCredentialsFile,
+
 
             $this->refresh,
             $this->refreshToken,
@@ -434,16 +480,19 @@ class SendOauth2B implements OAuthTokenProvider
             'serviceAccountName => $this->serviceAccountName,
             'projectID' => $this->projectID,
             'impersonate' =>  $this->impersonate,
+            'gmailXoauth2Credentials' =>  $this-> gmailXoauth2Credentials,
+            'writeGmailCredentialsFile' =>  $this-> writeGmailCredentialsFile,
             'refresh' => false,
             'grantType' => $this->grantType,
+            'mailSMTPAddress' => $this-> mailSMTPAddress,
 
     /**
      *
      * using  'accessType' = 'offline' and 'accessPrompt' = 'none'
      * should not be needed unless the refresh token is one that can expire
      */
-        }  // ends number of args <= 3
-        
+        }  // ends number of args <= NUMPARMS
+
     /**
      * check if service provider is GoogleAPI; if so, write credentials .json
      * Must be written before instantiating SendOauth2C because  SendOauth2C
@@ -451,17 +500,6 @@ class SendOauth2B implements OAuthTokenProvider
      */
 
         $this->GoogleAPIOauth2File();
-
-
-    /**
-     * then instantiate C (and hence the provider)
-     */
-        $this->Send_Oauth_C_obj = new SendOauth2C($optionsC2);
-        $this->scope = $this->Send_Oauth_C_obj->getScope();
-        $this->provider = $this->getProvider();
-        $this->mail->Host = $this->getSMTPserver();
-        $this->mail->AuthType = $this->authTypeSetting;        // usually XOAUTH2 or LOGIN
-
 
     /**
      * mailSMTPAddress should normally NOT be set in global but allowed to take the SendOauth2 default,
@@ -475,6 +513,18 @@ class SendOauth2B implements OAuthTokenProvider
         }
 
         $this->mail->Username = $this->mailSMTPAddress; // SMTP sender email address (MSFT or Google email account)
+
+
+    /**
+     * then instantiate C (and hence the provider)
+     */
+        $this->Send_Oauth_C_obj = new SendOauth2C($optionsC2);
+        $this->scope = $this->Send_Oauth_C_obj->getScope();
+        $this->provider = $this->getProvider();
+        $this->mail->Host = $this->getSMTPserver();
+        $this->mail->AuthType = $this->authTypeSetting;        // usually XOAUTH2 or LOGIN
+
+
 
     /**
      * now Oauth2 authenticate, but only if XOAUTH2 !
@@ -585,6 +635,8 @@ class SendOauth2B implements OAuthTokenProvider
                 $this->serviceAccountName,
                 $this->projectID,
                 $this->impersonate,
+                $this->gmailXoauth2Credentials,
+                $this->writeGmailCredentialsFile,
                 $this->refresh,
                 $nrt,
                 $this->grantType,
@@ -649,8 +701,11 @@ class SendOauth2B implements OAuthTokenProvider
             'serviceAccountName' => $this->serviceAccountName,
             'projectID' => $this->projectID,
             'impersonate' =>  $this->impersonate,
+            'gmailXoauth2Credentials' => $this-> gmailXoauth2Credentials,
+            'writeGmailCredentialsFile' => $this-> writeGmailCredentialsFile,
             'refresh' => false,
             'grantType' => $this->grantType,
+            'mailSMTPAddress' => $this-> mailSMTPAddress,
             ];
     }
  
