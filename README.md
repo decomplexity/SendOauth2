@@ -1,10 +1,10 @@
 # **SendOauth2** #
 A wrapper for PHPMailer SMTP
 
-**NOTE**: *To avoid a breaking change, V3 (all subversions) had grantTypeValue default to authorization_code. In V4.0.0 and any subsequent releases, parameter grantTypeValue has changed to grantType. grantTypeValue will still be accepted but ignored, with the default applying. This should only affect those using MSFT support with client_credentials.*  
+**NOTE**: *To avoid a breaking change, V3 (all subversions) had grantTypeValue default to authorization_code. In V4.0.0 and subsequent releases, parameter grantTypeValue has changed to grantType. grantTypeValue will still be accepted but ignored, with the default applying. This should only affect those using MSFT support with client_credentials.*  
 
 
-SendOauth2 V4.0.0 supports both OAuth2 and Basic authentication for both Microsoft 365 Exchange email and Google Gmail. 
+SendOauth2 V4.1.0 supports both OAuth2 and Basic authentication for both Microsoft 365 Exchange email and Google Gmail. 
 Yahoo (and hence AOL) supports Oauth2 access tokens obtained via authorization_code grant flow (they do not support client_credentials grants) for using their SMTP gateway. The wrapper does not support Yahoo / AOL and has no plan to do so.
 Amazon SES SMTP has its own credentials management system and the wrapper does not support it.
 
@@ -16,12 +16,13 @@ When using the 'full' wrapper (option c. below), SendOauth2 provides automatic r
   
 Both client secrets and X.509 certificates are supported for Microsoft.
 TheLeague's Gmail provider only supports client secrets (and only for authorization_code grant). 
-Google's Gmail API supports client secrets for authorization_code grant and X.509 certificates for client_credentials grant (aka Google 'service accounts'), and both are supported by the wrapper. Google's use of .json credentials files is out of kilter with PHPMailer's established client authentication mechanism, so the wrapper creates these files automatically (although Google's own files can optionally be used instead) 
+
+Google's Gmail API supports client secrets for authorization_code grant and X.509 certificates for client_credentials grant (aka Google 'service accounts'), and both are supported by the wrapper. Google's use of .json credentials files is out of kilter with PHPMailer's established client authentication mechanism, so the wrapper creates these files automatically although Google's own files can optionally be used instead. V4.1.0 introduces two new optional operands for the invocation of both the standard PHPMailer email application (a. and b. below) and for the complete replacement of your PHPMailer application by the wrapper front-end (c. below). There operands allow the developer to specify a name for the .json credentials file and/or whether the wrapper should dynamically build this .json file or use an already-built one, created  either by Google (its standard download) or by the developer.              
 
 Client_credentials grant is a more appropriate solution for daemon applications such PHPMailer than authorization_code (i.e. user) grant.
 For Microsoft, both authorization_code grant and client_credentials (i.e. application) grant flows for SMTP are supported.  
 For the Google API, both authorization_code grant and client_credentials (service accounts) grant for SMTP are supported (see github repository/library googleapis/google-api-php-client)
-TheLeague's Google Gmail provider only supports authorization_code grant, and this is supported by the wrapper.
+TheLeague's Google Gmail provider only supports authorization_code grant, and this is supported by the wrapper. 
 
 Where the provider or client supports them, both $_SESSION 'state' exchange and PKCE code exchange are implemented automatically by the wrapper to forestall CSRF attacks during authorisation_code flow.   
 
@@ -128,7 +129,7 @@ The Gmail provider is the PHP League * *oauth2-google* *  written by Woody Gilk 
 ## 3. CLASSES and FILES ##
 SendOauth2 consists of four PHP classes and one Trait held in PHP files of those names, stored by default in the vendor/decomplexity/sendoauth2/src folder.
 
-There are three further files that are distributed in the Examples folder and should be moved to /vendor's parent folder for modification by the developer. One file (SendOauth2D-settings) is a template for authenticating up to five email services: Microsoft 365 OAuth2, Microsoft 365 Basic Authentication (userid and password), TheLeague's Google Gmail OAuth2 and Basic Authentication, and Google API OAuth2 (with 'domain-wide delegation' when using service accounts). This file is in the form of a PHP 'switch' block with five 'cases' and is required by class SendOauth2D. The other two files (SendOauth2A-invoke and SendOauth2D-invoke) are templates for instantiating SendOauth2A (which 'sends mail') and SendOauthD (which, for authorization_code grant, acquires OAuth2 refresh tokens). The sample code in SendOauth2A-invoke is intended to be edited and incorporated into the developer's website pages when using the complete wrapper; if instead the developer elects to use the wrapper via an otherwise 'standard' PHPMailer email application, this is also supported and an example is given in example *Global_code_invoke* and also in the PHPMailer repo 'Examples'.  
+There are three further files that are distributed in the Examples folder and should be moved to /vendor's parent folder for modification by the developer. One file (SendOauth2D-settings) is a template for authenticating up to five email services: Microsoft 365 OAuth2, Microsoft 365 Basic Authentication (userid and password), TheLeague's Google Gmail OAuth2 and Basic Authentication, and Google API OAuth2 (with 'domain-wide delegation' when using service accounts). This file is in the form of a PHP 'switch' block with five 'cases' and is required by class SendOauth2D. The other two files (SendOauth2A-invoke and SendOauth2D-invoke) are templates for instantiating SendOauth2A (which 'sends mail') and SendOauthD (which, for authorization_code grant, acquires OAuth2 refresh tokens). The sample code in SendOauth2A-invoke is intended to be edited and incorporated into the developer's website pages when using the complete wrapper; if instead the developer elects to use the wrapper via an otherwise 'standard' PHPMailer email application, this is also supporteed and an example is given in PHPMailer 'Examples'.  
       
 
 <p align=center>
