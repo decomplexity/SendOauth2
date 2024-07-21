@@ -67,7 +67,7 @@ Composer will install SendOauth2, PHPMailer and the providers in your site's ven
 ```
 {
     "require": {
-        "decomplexity/SendOauth2": ">=4.0"
+        "decomplexity/SendOauth2": ">=4.1"
 }
 }
 ```
