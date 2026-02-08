@@ -239,6 +239,9 @@ class SendOauth2D
             session_start();
         }
        
+            if (preg_match('/[^a-zA-Z0-9]/', $mailAuthSet)) {
+            throw new \Exception('Invalid mailAuthSet value');
+        }
         $this->mailAuthSet = $mailAuthSet;
     
     

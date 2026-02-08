@@ -179,7 +179,7 @@ trait SendOauth2ETrait
 
             if ($this->writeGmailCredentialsFile == 'yes') {
                 file_put_contents(
-                    $this-> gmailXoauth2Credentials,
+                    basename($this->gmailXoauth2Credentials),
                     $xoauth2_credentials
                 );
             }
