@@ -411,6 +411,9 @@ class SendOauth2B implements OAuthTokenProvider
     /**
      * assume we were instantiated from decomplexity\SendOauth2 wrapper
      */
+            if (preg_match('/[^a-zA-Z0-9]/', $optionsB['mailAuthSet'])) {
+                throw new \Exception('Invalid mailAuthSet value');
+            }
             $this->mailAuthSet = $optionsB['mailAuthSet'];
             $this->mailSMTPAddress = $optionsB['mailSMTPAddress'];
             $this->mail = $optionsB['mail'];
