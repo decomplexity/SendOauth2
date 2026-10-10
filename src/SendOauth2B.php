@@ -7,7 +7,7 @@
  * @category Class
  * @see      https://github.com/PHPMailer/PHPMailer/ The PHPMailer GitHub project
  * @author   Max Stewart (decomplexity) <SendOauth2@decomplexity.com>
- * @copyright   2021 Max Stewart
+ * @copyright  2021 Max Stewart
  * @license  MIT
  */
       namespace decomplexity\SendOauth2;
@@ -177,7 +177,14 @@ class SendOauth2B implements OAuthTokenProvider
      */
     protected $writeGmailCredentialsFile = "";
 
+   
     /**
+    determines whether a refresh token is to be generated
+    */
+    protected $refresh = "";
+  
+  
+   /**
      * XOAUTH2 refresh token initially generated offline by SendOauth2D
      * but dynamically regenerated afterwards
      *
@@ -414,7 +421,7 @@ class SendOauth2B implements OAuthTokenProvider
             if (preg_match('/[^a-zA-Z0-9]/', $optionsB['mailAuthSet'])) {
                 throw new \Exception('Invalid mailAuthSet value');
             }
-            $this->mailAuthSet = $optionsB['mailAuthSet'];
+			$this->mailAuthSet = $optionsB['mailAuthSet'];
             $this->mailSMTPAddress = $optionsB['mailSMTPAddress'];
             $this->mail = $optionsB['mail'];
     /**
@@ -527,23 +534,12 @@ class SendOauth2B implements OAuthTokenProvider
         $this->mail->Host = $this->getSMTPserver();
         $this->mail->AuthType = $this->authTypeSetting;        // usually XOAUTH2 or LOGIN
 
-
-
-    /**
-     * now Oauth2 authenticate, but only if XOAUTH2 !
-     */
-
-        if ($this->authTypeSetting == "XOAUTH2") {
-            $this->mail->refresh_token = $this->refreshToken;
-            $this->provider = $this->getProvider();
-        } else {
     /**
      * Give PHPMailer the SMTP password only if AUTHN is either CRAM-MD5, LOGIN or PLAIN
      * Google's PLAIN-CLIENTTOKEN OAUTHBEARER and XOAUTH[1] are unsupported
      */
+	        if ($this->authTypeSetting != "XOAUTH2")
             $this->mail->Password = $this->SMTPPassword;
-        }
-
     /**
      * ends __construct
      */
@@ -714,7 +710,7 @@ class SendOauth2B implements OAuthTokenProvider
  
     /**
      * what follows is PHPMailer's OAuth functionality, elaborated  to support
-     * client_credentials grant (includign Google Service Accounts. If necessary,
+     * client_credentials grant (including Google Service Accounts. If necessary,
      * the present class can be extended with a child class containing a new getToken()
      * to support other grant flows
      *

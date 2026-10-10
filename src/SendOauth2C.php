@@ -6,7 +6,7 @@
  * @category Class
  * @see      https://github.com/PHPMailer/PHPMailer/ The PHPMailer GitHub project
  * @author   Max Stewart (decomplexity) <SendOauth2@decomplexity.com>
- * @copyright 2021 Max Stewart
+ * @copyright  2021 Max Stewart
  * @license  MIT
  */
 
@@ -165,9 +165,25 @@ class SendOauth2C
     /**
      * Does the provider support PKCE
      * @var boolean
-        */
+     */
     protected $isPKCE = true;
+    
+    /**
+     * for GoogleAPI service accounts only. Not needed for authorization_code grant
+     * @var string
+     */
+    protected $serviceAccountName;
+	
+	/**
+     * for GoogleAPI service accounts only. Not needed for authorization_code grant.
+     * Project ID is the lower-case version of the value in the 'footprint'
+     * box at the head of an IAM page
+     * @var string
+     */
+    protected $projectID;
 
+  
+  
     /**
      * __construct Method Doc Comment
      *
